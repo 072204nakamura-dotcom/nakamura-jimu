@@ -406,6 +406,21 @@ body{background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;color:var
       <div class="sec-title" style="margin-bottom:0;flex:1">保存済み献立</div>
       <span class="record-count" id="rec-count">0件</span>
     </div>
+    <!-- ソートボタン -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn-sm" id="sort-new" onclick="setSort('new')" style="border-color:var(--gd);color:var(--gd);font-weight:700">
+        🕐 新しい順
+      </button>
+      <button class="btn-sm" id="sort-old" onclick="setSort('old')">
+        📅 古い順
+      </button>
+      <button class="btn-sm" id="sort-lunch" onclick="setSort('lunch')">
+        ☀ ランチのみ
+      </button>
+      <button class="btn-sm" id="sort-dinner" onclick="setSort('dinner')">
+        🌙 ディナーのみ
+      </button>
+    </div>
     <div id="history-list"></div>
   </div>
 
@@ -1149,44 +1164,96 @@ function renderAiResult(data){
 // ═══════════════════════════════════
 // 履歴レンダリング
 // ═══════════════════════════════════
-function renderHistory(){
-  const store=loadStore();
-  const list=document.getElementById('history-list');
-  document.getElementById('rec-count').textContent=`${store.length}件`;
+// 現在のソート状態
+let currentSort = 'new';
 
-  if(store.length===0){
-    list.innerHTML=`<div class="history-empty">まだ記録がありません🌿<br>入力またはAI読み取りで<br>最初の献立を記録しましょう</div>`;
+function setSort(mode){
+  currentSort = mode;
+  // ボタンのアクティブ状態更新
+  ['new','old','lunch','dinner'].forEach(m=>{
+    const btn = document.getElementById(`sort-${m}`);
+    if(!btn) return;
+    if(m === mode){
+      btn.style.borderColor = 'var(--gd)';
+      btn.style.color = 'var(--gd)';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--ink)';
+      btn.style.fontWeight = '400';
+    }
+  });
+  renderHistory();
+}
+
+function renderHistory(){
+  let store = loadStore();
+  const list = document.getElementById('history-list');
+  document.getElementById('rec-count').textContent = `${store.length}件`;
+
+  if(store.length === 0){
+    list.innerHTML = `<div class="history-empty">まだ記録がありません🌿<br>入力またはAI読み取りで<br>最初の献立を記録しましょう</div>`;
+    return;
+  }
+
+  // フィルター
+  let filtered = store;
+  if(currentSort === 'lunch')  filtered = store.filter(r => r.mode === 'lunch');
+  if(currentSort === 'dinner') filtered = store.filter(r => r.mode === 'dinner');
+
+  // ソート
+  if(currentSort === 'old'){
+    filtered = [...filtered].sort((a,b) => {
+      if(a.date !== b.date) return a.date.localeCompare(b.date);
+      return a.id - b.id;
+    });
+  } else {
+    // new・lunch・dinnerは新しい順（日付降順）
+    filtered = [...filtered].sort((a,b) => {
+      if(a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.id - a.id;
+    });
+  }
+
+  if(filtered.length === 0){
+    list.innerHTML = `<div class="history-empty">該当する記録がありません</div>`;
     return;
   }
 
   // 月ごとにグループ化
-  const groups={};
-  store.forEach(r=>{
-    const ym=r.date.slice(0,7);
-    if(!groups[ym]) groups[ym]=[];
+  const groups = {};
+  filtered.forEach(r => {
+    const ym = r.date.slice(0,7);
+    if(!groups[ym]) groups[ym] = [];
     groups[ym].push(r);
   });
 
-  list.innerHTML='';
-  Object.keys(groups).sort().reverse().forEach(ym=>{
-    const [y,m]=ym.split('-');
-    const grp=document.createElement('div'); grp.className='month-group';
-    grp.innerHTML=`<div class="month-label">${y}年${parseInt(m)}月</div>`;
+  list.innerHTML = '';
+  const sortedKeys = Object.keys(groups).sort();
+  if(currentSort !== 'old') sortedKeys.reverse();
 
-    groups[ym].forEach(r=>{
-      const d=new Date(r.date+'T00:00:00');
-      const days=['日','月','火','水','木','金','土'];
-      const dateStr=`${parseInt(r.date.slice(5,7))}月${parseInt(r.date.slice(8,10))}日（${days[d.getDay()]}）`;
-      const isL=r.mode==='lunch';
-      const dishNames=r.dishes
-        .filter(d=>!d.isApp&&!d.isMeat&&d.name&&d.name!=='オードブル盛り合わせ'&&d.name!=='肉料理セレクト')
-        .map(d=>d.name).slice(0,3).join(' / ');
+  sortedKeys.forEach(ym => {
+    const [y,m] = ym.split('-');
+    const grp = document.createElement('div');
+    grp.className = 'month-group';
+    grp.innerHTML = `<div class="month-label">${y}年${parseInt(m)}月</div>`;
 
-      const item=document.createElement('div'); item.className='record-item';
+    groups[ym].forEach(r => {
+      const d = new Date(r.date + 'T00:00:00');
+      const days = ['日','月','火','水','木','金','土'];
+      const dateStr = `${parseInt(r.date.slice(5,7))}月${parseInt(r.date.slice(8,10))}日（${days[d.getDay()]}）`;
+      const isL = r.mode === 'lunch';
+      const dishNames = r.dishes
+        .filter(d => !d.isApp && !d.isMeat && d.name && d.name !== 'オードブル盛り合わせ' && d.name !== '肉料理セレクト')
+        .map(d => d.name).slice(0,3).join(' / ');
+
+      const item = document.createElement('div');
+      item.className = 'record-item';
+      item.dataset.id = r.id;
       const customerHtml = r.customer
         ? `<span style="font-family:'Shippori Mincho B1',serif;font-size:12px;color:${isL?'var(--gd)':'var(--nd)'};font-weight:700;margin-left:6px">👤 ${esc(r.customer)}</span>`
         : '';
-      item.innerHTML=`
+      item.innerHTML = `
         <span class="r-badge ${isL?'rb-lunch':'rb-dinner'}">${isL?'☀ ランチ':'🌙 ディナー'}</span>
         <div class="r-body">
           <div style="display:flex;align-items:baseline;flex-wrap:wrap">
@@ -1194,7 +1261,7 @@ function renderHistory(){
             ${customerHtml}
           </div>
           <div class="r-dishes">${dishNames||'（料理名未入力）'}</div>
-          ${r.note?`<div class="r-note">${esc(r.note)}</div>`:''}
+          ${r.note ? `<div class="r-note">${esc(r.note)}</div>` : ''}
         </div>
         <div class="r-actions" style="flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:140px">
           <button class="btn-sm" onclick="showDetail(${r.id})">詳細</button>
