@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>食材マスター | Café照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;600;700;800&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --ink:#1c1612;--bg:#eae5dc;--cream:#f8f4ed;--card:#fff;
+  --gd:#2a5c3f;--gm:#4a8c62;--gl:#c8e6d0;--gxl:#f0f9f3;
+  --gold:#b8902a;--gold-l:#fdf0d0;
+  --red:#c0392b;--border:#ddd5c2;--line:#e8e0d0;
+  --mid:#7a6e5e;--light:#f5f0e8;--shadow:rgba(28,22,18,.10);
+  --sky:#1e6fa8;--sky-l:#e8f3fb;
+}
+body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);min-height:100vh}
+.page{max-width:520px;margin:0 auto;padding:0 0 calc(80px + env(safe-area-inset-bottom,0px))}
+
+/* ── トップバー ── */
+.top-bar{
+  background:var(--gd);padding:16px 18px 13px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 3px 20px rgba(42,92,63,.4);
+}
+.top-shop{font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.22em;font-family:"Shippori Mincho B1",serif;display:block;margin-bottom:2px}
+.top-title{font-family:"Shippori Mincho B1",serif;font-size:19px;font-weight:800;color:#fff;letter-spacing:.05em;line-height:1}
+.cloud-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 12px;font-size:10px;cursor:pointer;letter-spacing:.1em;font-family:"Shippori Mincho B1",serif;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cloud-btn:active{opacity:.8}
+.sync-badge{font-size:9px;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:700;letter-spacing:.06em}
+
+/* ── 検索・フィルターバー ── */
+.toolbar{background:var(--cream);border-bottom:1px solid var(--border);padding:10px 12px;position:sticky;top:103px;z-index:180}
+.search-row{display:flex;gap:8px;margin-bottom:8px}
+.search-inp{
+  flex:1;height:38px;border:1.5px solid var(--border);border-radius:10px;
+  padding:0 12px 0 34px;font-size:14px;font-family:"Zen Kaku Gothic New",sans-serif;
+  color:var(--ink);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a6e5e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;outline:none;
+}
+.search-inp:focus{border-color:var(--gm);background-color:#fff}
+.btn-add{height:38px;padding:0 14px;background:var(--gd);color:#fff;border:none;border-radius:10px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.06em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn-add:active{opacity:.85;transform:scale(.97)}
+.cat-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;background:#fff;font-size:11px;color:var(--mid);cursor:pointer;transition:all .18s;font-family:"Zen Kaku Gothic New",sans-serif;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cat-btn.on{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:700}
+
+/* ── カウンター ── */
+.count-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;font-size:11px;color:var(--mid)}
+.count-bar strong{font-family:"Shippori Mincho B1",serif;font-size:15px;color:var(--gd)}
+
+/* ── 食材カード ── */
+.ing-card{
+  background:var(--card);border-radius:13px;
+  box-shadow:0 2px 10px var(--shadow);
+  margin:0 12px 8px;overflow:hidden;
+  transition:transform .15s;
+}
+.ic-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px 9px;border-bottom:1px solid var(--line);
+  cursor:pointer;
+  -webkit-tap-highlight-color:rgba(42,92,63,.1);
+  touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;
+}
+.ic-name{font-family:"Shippori Mincho B1",serif;font-size:14px;font-weight:700;flex:1;margin-right:8px;line-height:1.3}
+.ic-badges{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.badge{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.bc-meat{background:#fff0e8;color:#8b3a15}
+.bc-dairy{background:#f0ecfa;color:#5a3a8b}
+.bc-season{background:#e8f5e9;color:#2a5c3f}
+.bc-oil{background:#fffde7;color:#7a6a00}
+.bc-pasta{background:#fce4ec;color:#880e4f}
+.bc-veg{background:#e0f2f1;color:#00695c}
+.bc-drink{background:#e8eaf6;color:#3949ab}
+.bc-sake{background:#ede7f6;color:#512da8}
+.bc-soy{background:#fff3e0;color:#e65100}
+.bc-dispose{background:#efebe9;color:#4e342e}
+.bc-other{background:var(--light);color:var(--mid)}
+.bc-akt{background:#f3f8f3;color:#2a5c3f}
+.tax-badge{font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+.tax-8{background:#e8f5e9;color:#2a5c3f}
+.tax-10{background:#fff3e0;color:#e65100}
+.ic-price{display:flex;align-items:baseline;gap:3px;padding:8px 14px;background:var(--gxl)}
+.price-val{font-family:"Shippori Mincho B1",serif;font-size:17px;font-weight:800;color:var(--gd)}
+.price-unit{font-size:11px;color:var(--mid)}
+.price-sup{font-size:11px;color:var(--mid);margin-left:auto}
+.ic-expand{display:none;padding:10px 14px;border-top:1px solid var(--line)}
+.ic-expand.open{display:block}
+
+/* ── 編集フォーム（インライン）── */
+.edit-form{background:var(--gxl);border-top:1px solid var(--gl);padding:12px 14px}
+.ef-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ef-lbl{font-size:10px;font-weight:700;color:var(--mid);letter-spacing:.1em;min-width:52px;flex-shrink:0}
+.ef-inp{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:14px;font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);background:#fff;outline:none}
+.ef-inp:focus{border-color:var(--gm)}
+select.ef-inp{cursor:pointer;-webkit-appearance:none}
+.ef-btns{display:flex;gap:8px;margin-top:4px}
+.btn-save-s{flex:1;padding:10px;border:none;border-radius:9px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn-s-green{background:var(--gd);color:#fff}
+.btn-s-red{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+
+/* ── ボトムバー（保存・その他） ── */
+.bottom-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:520px;
+  background:rgba(248,244,237,.98);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+  padding:10px 12px env(safe-area-inset-bottom,10px);
+  display:flex;gap:8px;z-index:300;
+}
+.btn-main{flex:2;padding:13px;border:none;border-radius:12px;font-family:"Shippori Mincho B1",serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn-m-green{background:var(--gd);color:#fff;box-shadow:0 4px 14px rgba(42,92,63,.3)}
+.btn-m-green:active{opacity:.88;transform:scale(.98)}
+.btn-sub{flex:1;padding:13px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--mid);letter-spacing:.06em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn-sub:active{opacity:.8}
+
+/* ── 納品書パネル ── */
+.inv-panel{display:none;padding:12px}
+.inv-panel.open{display:block}
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;background:var(--light);margin-bottom:10px;position:relative;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gm);background:var(--gxl)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.inv-result-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.inv-result-row:last-child{border-bottom:none}
+.inv-status{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
+.is-new{background:#e1f5ee;color:#0f6e56}
+.is-update{background:#faeeda;color:#854f0b}
+.is-same{background:#f1f1f1;color:#888}
+
+/* ── スピナー ── */
+.spinner{width:34px;height:34px;border:3px solid var(--gl);border-top-color:var(--gd);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── タブ ── */
+.tab-bar{background:var(--cream);border-bottom:2px solid var(--border);display:grid;grid-template-columns:1fr 1fr;position:sticky;top:57px;z-index:190}
+.tab-btn{padding:11px 4px 9px;border:none;background:transparent;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;margin-bottom:-2px;letter-spacing:.06em;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tab-btn .ico{font-size:16px}
+.tab-btn.on{color:var(--gd);border-bottom-color:var(--gd);font-weight:700}
+
+/* ── トースト ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2a5c3f;color:#fff;padding:10px 20px;border-radius:24px;font-family:"Shippori Mincho B1",serif;font-size:13px;letter-spacing:.1em;box-shadow:0 4px 16px rgba(0,0,0,.22);z-index:500;animation:fadeIn .25s ease;pointer-events:none}
+
+/* ── エラー ── */
+.err-box{background:#fdf0ee;border:1px solid #e8b4a8;border-radius:9px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:8px;display:none;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- トップバー -->
+<div class="top-bar">
+  <div>
+    <span class="top-shop">Café照</span>
+    <div class="top-title">食材マスター</div>
+  </div>
+  <button class="cloud-btn" onclick="openGasSettings()">☁️ クラウド設定</button>
+</div>
+
+<!-- タブ -->
+<div class="tab-bar">
+  <button class="tab-btn on" id="tab-master" onclick="switchTab('master')"><span class="ico">🧂</span>食材マスター</button>
+  <button class="tab-btn" id="tab-invoice" onclick="switchTab('invoice')"><span class="ico">📷</span>納品書取り込み</button>
+</div>
+
+<!-- ===================== 食材マスタータブ ===================== -->
+<div id="pane-master">
+  <div class="toolbar">
+    <div class="search-row">
+      <input class="search-inp" id="q" placeholder="食材名・業者名で検索..." oninput="render()">
+      <button class="btn-add" onclick="addNew()">＋ 追加</button>
+    </div>
+    <div class="cat-scroll" id="cat-btns"></div>
+  </div>
+  <div class="count-bar">
+    <span>表示中 <strong id="count">–</strong> 品目</span>
+    <span style="font-size:10px">タップで展開 / 編集</span>
+  </div>
+  <div id="ing-list" style="animation:fadeIn .25s ease"></div>
+</div>
+
+<!-- ===================== 納品書タブ ===================== -->
+<div id="pane-invoice" class="inv-panel">
+  <div style="padding:12px 0 8px">
+    <div style="font-family:'Shippori Mincho B1',serif;font-size:15px;font-weight:700;margin-bottom:4px">📷 納品書から単価を取り込む</div>
+    <div style="font-size:12px;color:var(--mid);line-height:1.7">紙の納品書を撮影するだけ。AIが商品名・単価を自動認識して食材マスターに上書き保存します。</div>
+  </div>
+  <div class="upload-zone" id="inv-drop"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="handleDrop(event)">
+    <div style="font-size:36px;margin-bottom:8px">📷</div>
+    <div style="font-family:'Shippori Mincho B1',serif;font-size:15px;font-weight:700;margin-bottom:4px">今すぐ撮影 または 写真を選ぶ</div>
+    <div style="font-size:11px;color:var(--mid)">JPG・PNG・PDF対応　複数枚OK</div>
+    <input type="file" accept="image/*,.pdf" capture="environment" id="inv-file" onchange="handleFile(event)">
+  </div>
+  <div id="inv-preview-wrap" style="display:none;margin-bottom:10px">
+    <img id="inv-preview-img" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--mid);text-align:center;margin-top:4px" id="inv-filename"></div>
+  </div>
+  <div class="err-box" id="inv-err"></div>
+  <button class="btn-main btn-m-green" id="inv-btn" onclick="analyzeInvoice()" disabled style="opacity:.45;width:100%;margin-bottom:8px;font-size:14px;font-family:'Shippori Mincho B1',serif;font-weight:700;border-radius:12px;padding:14px;letter-spacing:.08em;cursor:not-allowed">
+    🤖 AIで読み取る
+  </button>
+  <div id="inv-loading" style="display:none;text-align:center;padding:20px">
+    <div class="spinner"></div>
+    <div style="font-size:13px;color:var(--mid);font-family:'Shippori Mincho B1',serif;letter-spacing:.1em">AIが納品書を解析中...</div>
+    <div style="font-size:11px;color:var(--mid);margin-top:4px">商品名・単価を自動認識しています</div>
+  </div>
+  <div id="inv-result-wrap" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-family:'Shippori Mincho B1',serif;font-size:15px;font-weight:700">読み取り結果</div>
+      <div id="inv-summary" style="font-size:11px;color:var(--mid)"></div>
+    </div>
+    <div style="background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:0 2px 10px var(--shadow);margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 80px 50px 60px;gap:6px;padding:4px 0 6px;font-size:9px;font-weight:700;color:var(--mid);border-bottom:1px solid var(--border)">
+        <span>食材名</span><span>単価</span><span>単位</span><span>状態</span>
+      </div>
+      <div id="inv-result-list"></div>
+    </div>
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 12px;font-size:12px;color:#7a5a00;margin-bottom:10px;line-height:1.7">
+      💡 内容を確認してください。間違いがあれば直接タップして修正できます。<br>問題なければ「全て上書き保存」を押してください。
+    </div>
+    <button class="btn-main btn-m-green" onclick="applyInvoice()" style="width:100%;margin-bottom:8px;font-size:14px;font-family:'Shippori Mincho B1',serif;font-weight:700;border-radius:12px;padding:14px;letter-spacing:.08em">
+      ✅ 全て上書き保存
+    </button>
+    <button onclick="resetInvoice()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font-family:'Shippori Mincho B1',serif;font-size:13px;cursor:pointer;color:var(--mid)">
+      ← 撮り直す
+    </button>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- ボトムバー -->
+<div class="bottom-bar" id="bottom-bar">
+  <button class="btn-main btn-m-green" onclick="saveAll()">💾 保存する</button>
+  <button class="btn-sub" onclick="exportCSV()">📥 CSV</button>
+  <button class="btn-sub" onclick="syncNow()">🔄 同期</button>
+</div>
+
+<script>
+// =============================================
+// データ初期値（原価計算書から191品目）
+// =============================================
+const DEFAULT_INGS = [{"id": 1, "name": "タイ　合鴨ロース", "supplier": "ミノリフーズ", "unitPrice": 2.1, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 2, "name": "和牛ラム", "supplier": "ミノリフーズ", "unitPrice": 3.5, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 3, "name": "アメリカ　牛ハラミ", "supplier": "ミノリフーズ", "unitPrice": 2.3, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 4, "name": "国産（F１）牛肉内ヒラ", "supplier": "ミノリフーズ", "unitPrice": 2.7, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 5, "name": "国産豚肉　（生）肩ロース", "supplier": "ミノリフーズ", "unitPrice": 1.38, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 6, "name": "豚ミンチ", "supplier": "ミノリフーズ", "unitPrice": 1.38, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 7, "name": "国産　冷凍　豚フィレ", "supplier": "ミノリフーズ", "unitPrice": 1.35, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 8, "name": "国産　（生）　豚ロース", "supplier": "ミノリフーズ", "unitPrice": 1.3, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 9, "name": "鶏肉　手羽先　２ｋ　33個", "supplier": "ミノリフーズ", "unitPrice": 0.7, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 10, "name": "アメリカ　冷凍　チキンレッグ", "supplier": "ミノリフーズ", "unitPrice": 0.68, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 11, "name": "国産鶏　丸　中抜き", "supplier": "ミノリフーズ", "unitPrice": 7.8, "unit": "g", "taxRate": 0.08, "category": "肉類"}, {"id": 12, "name": "あらびき天日塩　25K", "supplier": "メイラク", "unitPrice": 0.07836, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 13, "name": "フレッシュ40", "supplier": "メイラク", "unitPrice": 1.36, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 14, "name": "牛乳", "supplier": "メイラク", "unitPrice": 0.27, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 15, "name": "パーチバター無縁　四つ葉", "supplier": "メイラク", "unitPrice": 2.235556, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 16, "name": "マンゴージュース", "supplier": "メイラク", "unitPrice": 0.33, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 17, "name": "アイスティー", "supplier": "メイラク", "unitPrice": 0.226, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 18, "name": "アップルジュース", "supplier": "メイラク", "unitPrice": 0.247, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 19, "name": "アイスコーヒー無糖", "supplier": "メイラク", "unitPrice": 0.25, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 20, "name": "グレープフルーツジュース", "supplier": "メイラク", "unitPrice": 0.308, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 21, "name": "ザクロジュース", "supplier": "メイラク", "unitPrice": 0.402, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 22, "name": "赤ぶどうジュース", "supplier": "メイラク", "unitPrice": 0.378, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 23, "name": "パインアップルジュース", "supplier": "メイラク", "unitPrice": 0.454, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 24, "name": "トマトジュース", "supplier": "メイラク", "unitPrice": 0.3, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 25, "name": "ガムシロップ８ｇ＊５０", "supplier": "メイラク", "unitPrice": 4.42, "unit": "個", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 26, "name": "凍結卵白　１ｋ", "supplier": "メイラク", "unitPrice": 0.684, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 27, "name": "グラニュー糖", "supplier": "メイラク", "unitPrice": 0.321, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 28, "name": "上白糖", "supplier": "メイラク", "unitPrice": 0.321, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 32, "name": "フレッシュ27", "supplier": "メイラク", "unitPrice": 0.5, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 33, "name": "モッツァレラたりあーと", "supplier": "メイラク", "unitPrice": 1.6, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 38, "name": "シューストリングポテト", "supplier": "メイラク", "unitPrice": 0.385, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 39, "name": "皮付きポテト", "supplier": "メイラク", "unitPrice": 0.43, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 40, "name": "クラッシュトマト５ｋ＊２", "supplier": "メイラク", "unitPrice": 0.3763, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 44, "name": "IGP塩フィーノ１ｋ", "supplier": "メイラク", "unitPrice": 0.321, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 45, "name": "EXVオリーブオイル１L", "supplier": "メイラク", "unitPrice": 2.22, "unit": "ml", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 46, "name": "ハーシーチョコシロップ６２３ｇ", "supplier": "メイラク", "unitPrice": 1.473515, "unit": "g", "taxRate": 0.08, "category": "乳製品・飲料"}, {"id": 47, "name": "リングイネ3＊1.5　100ｇ　60入", "supplier": "各業者", "unitPrice": 79.0, "unit": "個", "taxRate": 0.08, "category": "調味料"}, {"id": 48, "name": "代引き手数料", "supplier": "各業者", "unitPrice": 300.0, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 49, "name": "クラシックブレンド　500ｇ", "supplier": "1袋", "unitPrice": 5.95, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 50, "name": "キミセ　純醤油", "supplier": "各業者", "unitPrice": 0.288889, "unit": "ml", "taxRate": 0.08, "category": "調味料"}, {"id": 51, "name": "キミセ　薄口醬油", "supplier": "各業者", "unitPrice": 0.5, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 52, "name": "キミセ　出し醬油", "supplier": "各業者", "unitPrice": 1.0, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 53, "name": "キミセ　五穀醤油", "supplier": "各業者", "unitPrice": 1.0, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 54, "name": "キミセ　甘露醤油", "supplier": "各業者", "unitPrice": 0.92, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 55, "name": "きびあじ", "supplier": "各業者", "unitPrice": 0.63, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 56, "name": "マヨネーズ　QP", "supplier": "各業者", "unitPrice": 0.662222, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 57, "name": "塩胡椒", "supplier": "各業者", "unitPrice": 1.013333, "unit": "g", "taxRate": 0.08, "category": "調味料"}, {"id": 58, "name": "蘭王卵", "supplier": "各業者", "unitPrice": 46.0, "unit": "個", "taxRate": 0.08, "category": "調味料"}, {"id": 59, "name": "伯方の塩　焼き塩　１ｋ", "supplier": "アクト", "unitPrice": 0.485, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 60, "name": "原塩　１ｋ", "supplier": "アクト", "unitPrice": 0.185, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 61, "name": "原塩　25ｋ", "supplier": "アクト", "unitPrice": 0.092, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 62, "name": "沖縄の塩シママース　１ｋ", "supplier": "アクト", "unitPrice": 0.372, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 63, "name": "ゲランドの塩　１ｋ", "supplier": "アクト", "unitPrice": 1.174, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 64, "name": "食塩　５K", "supplier": "アクト", "unitPrice": 0.107, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 65, "name": "ケチャップ　１ｋ", "supplier": "アクト", "unitPrice": 0.462, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 66, "name": "ナンプラー　700㎖", "supplier": "アクト", "unitPrice": 0.625714, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 67, "name": "ワインビネガー白マイユ", "supplier": "アクト", "unitPrice": 1.504, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 68, "name": "料理酒　1.8L", "supplier": "アクト", "unitPrice": 0.251111, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 69, "name": "本みりん　日の出", "supplier": "アクト", "unitPrice": 0.383333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 70, "name": "三河本みりん", "supplier": "アクト", "unitPrice": 2.222222, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 71, "name": "京酢加茂千鳥", "supplier": "アクト", "unitPrice": 0.616667, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 72, "name": "米酢　オタフク", "supplier": "アクト", "unitPrice": 0.263333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 73, "name": "味ぽん", "supplier": "アクト", "unitPrice": 0.508889, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 74, "name": "りんご酢　1.8L", "supplier": "アクト", "unitPrice": 0.309444, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 75, "name": "東丸　牡蠣だし醬油　１．８L", "supplier": "アクト", "unitPrice": 0.583333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 76, "name": "スンチャンコチュジャン　500G", "supplier": "アクト", "unitPrice": 1.36, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 77, "name": "甜麵醬　有紀　１K", "supplier": "アクト", "unitPrice": 0.98, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 78, "name": "フルーツチャツネ　450G", "supplier": "アクト", "unitPrice": 1.444444, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 79, "name": "練りごま　かどや　１K", "supplier": "アクト", "unitPrice": 1.331, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 80, "name": "プードルデコール（粉糖）マグリット", "supplier": "アクト", "unitPrice": 2.511, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 81, "name": "パウダーシュガー　日新　１K", "supplier": "アクト", "unitPrice": 0.509, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 82, "name": "マスタードディジョンマイユ　SB865G", "supplier": "瓶", "unitPrice": 1.445087, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 83, "name": "手作り豆腐専用にがり　500㎖", "supplier": "アクト", "unitPrice": 1.0, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 84, "name": "マスタード　粒　845ｇ", "supplier": "アクト", "unitPrice": 1.467456, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 85, "name": "サラダ油　グリーン　16.5K", "supplier": "アクト", "unitPrice": 0.389636, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 86, "name": "純正ごま油　1.65K", "supplier": "アクト", "unitPrice": 1.212121, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 87, "name": "サラダ油　ハイブリッド黄　16.5K", "supplier": "アクト", "unitPrice": 0.351515, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 88, "name": "オリーブ油　EXV　フルクトゥス　750M", "supplier": "アクト", "unitPrice": 4.642667, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 89, "name": "天ぷら粉　１ｋ", "supplier": "アクト", "unitPrice": 0.385, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 90, "name": "100％北海道産ピッツァ用江別製粉", "supplier": "アクト", "unitPrice": 0.2792, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 91, "name": "片栗粉　１K", "supplier": "アクト", "unitPrice": 0.48, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 92, "name": "コーンスターチ　１K", "supplier": "アクト", "unitPrice": 0.29, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 93, "name": "上用粉　葵　1K", "supplier": "アクト", "unitPrice": 0.725, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 94, "name": "プラス麴　米麴粉末　500G", "supplier": "アクト", "unitPrice": 2.13, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 95, "name": "ゆめちから100　江別製粉　25KG", "supplier": "アクト", "unitPrice": 0.28652, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 96, "name": "くず粉　みやま　１K", "supplier": "アクト", "unitPrice": 1.089, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 97, "name": "パイシート　マルハニチロ　１K　200＊５", "supplier": "アクト", "unitPrice": 1.278, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 98, "name": "焙焼作り生パン粉A（12㎜）　雪和　１K", "supplier": "アクト", "unitPrice": 0.423, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 99, "name": "パートカダイフ　５００ｇ", "supplier": "アクト", "unitPrice": 2.466, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 100, "name": "レガーロスパ#103（1.5㎜）　５K", "supplier": "アクト", "unitPrice": 0.4802, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 101, "name": "バリラペンネリガート№73　500G", "supplier": "アクト", "unitPrice": 1.078, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 102, "name": "クスクス（パスタ）　GA　500G", "supplier": "アクト", "unitPrice": 1.31, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 103, "name": "パートフィロー　フィラキス　500G", "supplier": "アクト", "unitPrice": 2.1, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 104, "name": "パイトルテ3号　リボン60個", "supplier": "アクト", "unitPrice": 133.333333, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 105, "name": "パイタルト（大）PTー１リボン168個", "supplier": "アクト", "unitPrice": 75.642857, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 106, "name": "クリームチーズ　キリ　１K", "supplier": "アクト", "unitPrice": 2.5, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 107, "name": "ミックスチーズシュレッド　１K", "supplier": "アクト", "unitPrice": 1.35, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 108, "name": "冷ゴルゴンゾーラ　クラッシュ　伊500g", "supplier": "アクト", "unitPrice": 4.7, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 109, "name": "チーズマスカルポーネ　500G", "supplier": "アクト", "unitPrice": 2.772, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 110, "name": "グリエールシュレッド　ウォーレ１K", "supplier": "アクト", "unitPrice": 5.688, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 111, "name": "チーズリコッタ（超高温殺菌）500G", "supplier": "アクト", "unitPrice": 2.23, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 112, "name": "チーズキャステロブルー９１G", "supplier": "アクト", "unitPrice": 7.10989, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 113, "name": "ソフリット　カゴメ　１ｋ", "supplier": "アクト", "unitPrice": 1.404, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 114, "name": "冷凍　ミックスベリー　500g", "supplier": "アクト", "unitPrice": 1.448, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 115, "name": "花らっきょう　１K", "supplier": "アクト", "unitPrice": 1.1, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 116, "name": "ココナッツミルク　チャオコー　400M", "supplier": "アクト", "unitPrice": 0.6575, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 117, "name": "コーンカーネル　タイ産　１K", "supplier": "アクト", "unitPrice": 0.71, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 118, "name": "冷凍　ラズベリーホール　500G", "supplier": "アクト", "unitPrice": 2.502, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 119, "name": "パセリチップ　SB　100G", "supplier": "アクト", "unitPrice": 7.4, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 120, "name": "芽ひじき　千鳥　１K", "supplier": "アクト", "unitPrice": 1.55, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 121, "name": "オロシ生姜ブロック２０G＊10", "supplier": "アクト", "unitPrice": 1.75, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 122, "name": "胡麻　すり胡麻（白）　１K", "supplier": "アクト", "unitPrice": 0.7, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 123, "name": "ケーパース　GA　70G", "supplier": "アクト", "unitPrice": 5.571429, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 124, "name": "ミックスオリーブ　ラロッカ　500G", "supplier": "アクト", "unitPrice": 2.912, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 125, "name": "トマトペースト　イタリア　カゴメ850G", "supplier": "アクト", "unitPrice": 1.052941, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 126, "name": "ムキニンニク　500ｇ", "supplier": "アクト", "unitPrice": 0.81, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 127, "name": "尾付き伸ばしエビ　５L", "supplier": "アクト", "unitPrice": 76.3, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 128, "name": "微笑みムキバナメイ　31/40　１K", "supplier": "アクト", "unitPrice": 2.33, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 129, "name": "微笑みムキバナメイ　31/40　１K", "supplier": "アクト", "unitPrice": 30.25974, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 130, "name": "微笑みムキバナメイ　41/50　１K", "supplier": "アクト", "unitPrice": 19.416667, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 131, "name": "極旨無等頭21/25VN真空450G＊４", "supplier": "アクト", "unitPrice": 49.0, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 132, "name": "白姫海老有頭30/40　国産　500G", "supplier": "アクト", "unitPrice": 65.714286, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 133, "name": "無頭海老BT21/25", "supplier": "アクト", "unitPrice": 45.021277, "unit": "尾", "taxRate": 0.08, "category": "アクト"}, {"id": 134, "name": "たらこ（バラコ）チューブ　500G", "supplier": "アクト", "unitPrice": 3.25, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 135, "name": "アンチョビ　ベッキオモロ　伊産　700g", "supplier": "瓶", "unitPrice": 4.367143, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 136, "name": "中国産ボイル殻付きハマグリ16/20粒", "supplier": "アクト", "unitPrice": 1.1, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 137, "name": "生冷イタヤ貝柱200/300　１K", "supplier": "アクト", "unitPrice": 1.98, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 138, "name": "ホタテ貝柱フレークA　北海道　１KG", "supplier": "アクト", "unitPrice": 6.25, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 139, "name": "スモークサーモントラウトスライス　チリ　500G", "supplier": "アクト", "unitPrice": 4.876, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 140, "name": "ノルウェーサーモン2分の１枚", "supplier": "㎏", "unitPrice": 2.7, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 141, "name": "スズキ2分の１", "supplier": "KG", "unitPrice": 2.75, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 142, "name": "熟成鶏肝　広島県産（冷蔵）　2㎏", "supplier": "アクト", "unitPrice": 0.513, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 143, "name": "国産　鶏皮　（冷凍）　2K", "supplier": "アクト", "unitPrice": 0.44, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 144, "name": "広島熟成鶏ガラ　（2型）", "supplier": "アクト", "unitPrice": 0.18, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 145, "name": "熟成鶏鶏むね　２K", "supplier": "アクト", "unitPrice": 0.552, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 146, "name": "農家のベーコン　3分の１　約１K", "supplier": "㎏", "unitPrice": 3.5, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 147, "name": "イベリコソーセージ　（プレーン）100G＊５", "supplier": "アクト", "unitPrice": 296.0, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 148, "name": "ラム　フレンチラック", "supplier": "㎏", "unitPrice": 5.038, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 149, "name": "熟成鶏もも肉　広島県産　２K", "supplier": "アクト", "unitPrice": 0.97, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 150, "name": "ひざ軟骨　以外", "supplier": "アクト", "unitPrice": 1.04, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 151, "name": "はんぺん　60ｇ＊１０", "supplier": "アクト", "unitPrice": 79.7, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 152, "name": "冷凍絹厚揚げ　50ｇ20", "supplier": "アクト", "unitPrice": 44.3, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 153, "name": "チキンコンソメ", "supplier": "アクト", "unitPrice": 2.057, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 154, "name": "出汁パック　創味　１K", "supplier": "アクト", "unitPrice": 94.4, "unit": "ｐｃ", "taxRate": 0.08, "category": "アクト"}, {"id": 155, "name": "出汁パック　フタバ　１K", "supplier": "アクト", "unitPrice": 200.0, "unit": "ｐｃ", "taxRate": 0.08, "category": "アクト"}, {"id": 156, "name": "白だしつゆ　創味　1.8L", "supplier": "アクト", "unitPrice": 1.15, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 157, "name": "素材調味だし　あさり　フタバ　１L", "supplier": "アクト", "unitPrice": 2.95, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 158, "name": "白だし　だしげん　1.8L", "supplier": "アクト", "unitPrice": 0.655556, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 159, "name": "創味の万能白だし　1.8L", "supplier": "アクト", "unitPrice": 0.422222, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 160, "name": "だしパックマリンブルー　５０G×２０P", "supplier": "アクト", "unitPrice": 102.5, "unit": "ｐｃ", "taxRate": 0.08, "category": "アクト"}, {"id": 161, "name": "スープベース　ムール貝　400㎖", "supplier": "アクト", "unitPrice": 4.2225, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 162, "name": "和風万能だし　やすまる　8.8G＊30", "supplier": "アクト", "unitPrice": 23.833333, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 163, "name": "香る生おろしわさび　金印　750G", "supplier": "アクト", "unitPrice": 0.627615, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 164, "name": "505わさび　カネク750G", "supplier": "アクト", "unitPrice": 0.628667, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 165, "name": "ルビーポート赤　750㎖", "supplier": "アクト", "unitPrice": 3.333333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 166, "name": "赤玉スイートワイン　1.8L", "supplier": "アクト", "unitPrice": 0.868333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 167, "name": "サントリーV．O　PET ４L", "supplier": "アクト", "unitPrice": 1.1975, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 168, "name": "モンテ赤　サンジョベーゼ　1.5L", "supplier": "アクト", "unitPrice": 0.786667, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 169, "name": "モンテ白　トレッビアーノ1.5L", "supplier": "アクト", "unitPrice": 0.766667, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 170, "name": "ノイリープラットドライ　１L", "supplier": "アクト", "unitPrice": 2.077, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 171, "name": "ジンジャーエール　207㎖", "supplier": "アクト", "unitPrice": 118.0, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 172, "name": "コカ・コーラ", "supplier": "アクト", "unitPrice": 135.0, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 173, "name": "アンパンマンの完熟林檎　125㎖＊3＊12", "supplier": "アクト", "unitPrice": 60.416667, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 174, "name": "アサヒノンAL　アサヒZERO　334㎖", "supplier": "アクト", "unitPrice": 174.0, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 175, "name": "サントリー　烏龍茶　２L", "supplier": "アクト", "unitPrice": 0.1595, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 176, "name": "青才林檎J100％　広島県高野町　１L", "supplier": "アクト", "unitPrice": 0.962, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 177, "name": "サントリー　まるで梅酒なノンアル", "supplier": "アクト", "unitPrice": 0.48, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 178, "name": "湘南　白ノンALデュックDEモンターニュ", "supplier": "アクト", "unitPrice": 1.430667, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 179, "name": "トンボ　ノンAL　白セレブレ　スパークリング355㎖", "supplier": "アクト", "unitPrice": 1.760563, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 180, "name": "アサヒスーパードライ　中瓶", "supplier": "アクト", "unitPrice": 333.0, "unit": "本", "taxRate": 0.08, "category": "アクト"}, {"id": 181, "name": "ブルックリンラガー３L＊２", "supplier": "アクト", "unitPrice": 0.905333, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 182, "name": "アサヒ樽　１０L", "supplier": "アクト", "unitPrice": 0.592, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 183, "name": "土佐鶴　純米酒　1.8L", "supplier": "アクト", "unitPrice": 1.339444, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 184, "name": "亀齢　上撰　瓶　1.8L", "supplier": "アクト", "unitPrice": 0.988889, "unit": "ml", "taxRate": 0.08, "category": "アクト"}, {"id": 185, "name": "クッキングホイル　30㎝＊25ｍ", "supplier": "アクト", "unitPrice": 2.2, "unit": "10㎝", "taxRate": 0.08, "category": "アクト"}, {"id": 186, "name": "クッキングシート33㎝＊20ｍ", "supplier": "アクト", "unitPrice": 3.9, "unit": "10㎝", "taxRate": 0.08, "category": "アクト"}, {"id": 187, "name": "フレッシュラップ30㎝＊100ｍ", "supplier": "アクト", "unitPrice": 0.35, "unit": "10㎝", "taxRate": 0.08, "category": "アクト"}, {"id": 188, "name": "フレッシュラップ45㎝＊50ｍ", "supplier": "アクト", "unitPrice": 0.77, "unit": "10㎝", "taxRate": 0.08, "category": "アクト"}, {"id": 189, "name": "クーベルチュール　不二　１ｋ", "supplier": "アクト", "unitPrice": 4.862, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 190, "name": "生イースト　オリコ　500ｇ", "supplier": "アクト", "unitPrice": 1.26, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 191, "name": "アーモンドプードル　かわなし", "supplier": "アクト", "unitPrice": 2.58, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 192, "name": "アーモンドスライス　500G", "supplier": "アクト", "unitPrice": 1.48, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 193, "name": "コーンワッフルミニスリーブ付き120入り", "supplier": "アクト", "unitPrice": 33.333333, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 194, "name": "ココットカップ　150個", "supplier": "アクト", "unitPrice": 17.473333, "unit": "個", "taxRate": 0.08, "category": "アクト"}, {"id": 195, "name": "糸唐辛子　100G", "supplier": "アクト", "unitPrice": 13.0, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 196, "name": "オールスパイスパウダー　GA　300G", "supplier": "アクト", "unitPrice": 6.493333, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 197, "name": "サフランパウダー　GA　５G", "supplier": "アクト", "unitPrice": 644.6, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 198, "name": "カレーパウダー　C&B　400G", "supplier": "アクト", "unitPrice": 4.4525, "unit": "g", "taxRate": 0.08, "category": "アクト"}, {"id": 199, "name": "パワフルマット（中）６５＊１６０（ボックス）", "supplier": "消耗品", "unitPrice": 2.3, "unit": "枚", "taxRate": 0.08, "category": "消耗品"}, {"id": 200, "name": "シェフプレミアム　M200枚（100枚＊2本）", "supplier": "消耗品", "unitPrice": 6.25, "unit": "枚", "taxRate": 0.08, "category": "消耗品"}, {"id": 201, "name": "キミセ　純醤油", "supplier": "キミセ醤油", "unitPrice": 0.684444, "unit": "ml", "taxRate": 0.08, "category": "醤油類"}];
+
+// =============================================
+// GAS / ストレージ
+// =============================================
+let GAS_URL = localStorage.getItem('cafe_teru_gas') || '';
+let _ings = null;
+
+function load() {
+  if (_ings) return _ings;
+  try {
+    const saved = JSON.parse(localStorage.getItem('cafe_teru_ings') || 'null');
+    _ings = saved || JSON.parse(JSON.stringify(DEFAULT_INGS));
+  } catch(e) { _ings = JSON.parse(JSON.stringify(DEFAULT_INGS)); }
+  return _ings;
+}
+
+async function saveAll() {
+  localStorage.setItem('cafe_teru_ings', JSON.stringify(_ings));
+  if (GAS_URL) {
+    showSyncStatus('sync');
+    try {
+      await fetch(GAS_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'save', data: { ingredients: _ings } })
+      });
+      showSyncStatus('ok');
+    } catch(e) { showSyncStatus('err'); }
+  }
+  showToast('✅ 保存しました');
+}
+
+async function syncNow() {
+  if (!GAS_URL) { openGasSettings(); return; }
+  showSyncStatus('sync');
+  try {
+    const res = await fetch(GAS_URL + '?t=' + Date.now(), { method: 'GET', mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.ok && json.data?.ingredients) {
+      _ings = json.data.ingredients;
+      localStorage.setItem('cafe_teru_ings', JSON.stringify(_ings));
+      showSyncStatus('ok');
+      render();
+      showToast('✅ 最新データを取得しました');
+    } else throw new Error(json.error || '不明なエラー');
+  } catch(e) {
+    showSyncStatus('err');
+    showToast('⚠️ 同期失敗: ' + e.message);
+  }
+}
+
+function openGasSettings() {
+  const url = prompt('Google Apps Script のURLを入力してください
+（空白でクリア）', GAS_URL || '');
+  if (url === null) return;
+  GAS_URL = url.trim();
+  localStorage.setItem('cafe_teru_gas', GAS_URL);
+  if (GAS_URL) { showToast('✅ 設定しました'); syncNow(); }
+  else showToast('URLをクリアしました');
+}
+
+function showSyncStatus(status) {
+  const msgs = { sync: '🔄 同期中...', ok: '☁️ 同期済み', err: '⚠️ オフライン' };
+  const colors = { sync: 'rgba(255,255,255,.5)', ok: 'rgba(255,255,255,.85)', err: '#ffcccc' };
+  let el = document.getElementById('sync-status');
+  if (!el) {
+    el = document.createElement('span');
+    el.id = 'sync-status';
+    el.className = 'sync-badge';
+    document.querySelector('.cloud-btn').after(el);
+  }
+  el.textContent = msgs[status];
+  el.style.color = colors[status];
+  if (status === 'ok') setTimeout(() => el.textContent = '', 3000);
+}
+
+function showToast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+// =============================================
+// タブ
+// =============================================
+function switchTab(name) {
+  document.getElementById('pane-master').style.display = name === 'master' ? '' : 'none';
+  document.getElementById('pane-invoice').classList.toggle('open', name === 'invoice');
+  document.getElementById('bottom-bar').style.display = name === 'master' ? '' : 'none';
+  document.getElementById('tab-master').classList.toggle('on', name === 'master');
+  document.getElementById('tab-invoice').classList.toggle('on', name === 'invoice');
+}
+
+// =============================================
+// カテゴリ定義
+// =============================================
+const CATS = ['すべて','肉類','魚介類','乳製品・飲料','調味料','油・粉類','野菜・加工品','醤油類','アクト','消耗品','その他'];
+const CAT_BADGE = {
+  '肉類':'bc-meat','魚介類':'bc-drink','乳製品・飲料':'bc-dairy',
+  '調味料':'bc-season','油・粉類':'bc-oil','野菜・加工品':'bc-veg',
+  '醤油類':'bc-soy','アクト':'bc-akt','消耗品':'bc-dispose','その他':'bc-other'
+};
+
+let activeCat = 'すべて';
+
+function initCatBtns() {
+  const wrap = document.getElementById('cat-btns');
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cat-btn' + (c === 'すべて' ? ' on' : '');
+    b.textContent = c;
+    b.onclick = () => {
+      activeCat = c;
+      document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      render();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+// =============================================
+// レンダリング
+// =============================================
+function render() {
+  const ings = load();
+  const q = (document.getElementById('q')?.value || '').trim().toLowerCase();
+
+  const filtered = ings.filter(i => {
+    if (activeCat !== 'すべて' && i.category !== activeCat) return false;
+    if (q && !i.name.toLowerCase().includes(q) && !(i.supplier||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById('count').textContent = filtered.length;
+  const list = document.getElementById('ing-list');
+  list.innerHTML = '';
+
+  filtered.forEach(ing => {
+    const badgeCls = CAT_BADGE[ing.category] || 'bc-other';
+    const taxCls = ing.taxRate === 0.08 ? 'tax-8' : 'tax-10';
+    const taxLbl = ing.taxRate === 0.08 ? '8%' : '10%';
+
+    const card = document.createElement('div');
+    card.className = 'ing-card';
+    card.dataset.id = ing.id;
+    card.innerHTML = `
+      <div class="ic-head" onclick="toggleCard(${ing.id})">
+        <div class="ic-name">${esc(ing.name)}</div>
+        <div class="ic-badges">
+          <span class="badge ${badgeCls}">${esc(ing.category||'その他')}</span>
+          <span class="badge tax-badge ${taxCls}">${taxLbl}</span>
+          <span style="font-size:12px;color:var(--mid);margin-left:2px" id="chevron-${ing.id}">›</span>
+        </div>
+      </div>
+      <div class="ic-price">
+        <span class="price-val">¥${ing.unitPrice.toLocaleString('ja-JP', {maximumFractionDigits:4})}</span>
+        <span class="price-unit">/ ${esc(ing.unit)}</span>
+        <span class="price-sup">${esc(ing.supplier||'')}</span>
+      </div>
+      <div class="ic-expand" id="expand-${ing.id}">
+        <div class="edit-form">
+          <div class="ef-row">
+            <span class="ef-lbl">食材名</span>
+            <input class="ef-inp" value="${esc(ing.name)}" oninput="updateField(${ing.id},'name',this.value)">
+          </div>
+          <div class="ef-row">
+            <span class="ef-lbl">業者</span>
+            <input class="ef-inp" value="${esc(ing.supplier||'')}" oninput="updateField(${ing.id},'supplier',this.value)">
+          </div>
+          <div class="ef-row">
+            <span class="ef-lbl">単価</span>
+            <input class="ef-inp" type="number" step="0.0001" value="${ing.unitPrice}" oninput="updateField(${ing.id},'unitPrice',parseFloat(this.value)||0)" style="max-width:100px">
+            <span style="font-size:12px;color:var(--mid)">円 /</span>
+            <input class="ef-inp" value="${esc(ing.unit)}" oninput="updateField(${ing.id},'unit',this.value)" style="max-width:60px">
+          </div>
+          <div class="ef-row">
+            <span class="ef-lbl">カテゴリ</span>
+            <select class="ef-inp" onchange="updateField(${ing.id},'category',this.value)">
+              ${CATS.filter(c=>c!=='すべて').map(c=>`<option${c===ing.category?' selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="ef-row">
+            <span class="ef-lbl">税率</span>
+            <select class="ef-inp" onchange="updateField(${ing.id},'taxRate',parseFloat(this.value))" style="max-width:80px">
+              <option value="0.08"${ing.taxRate===0.08?' selected':''}>8%</option>
+              <option value="0.1"${ing.taxRate===0.1?' selected':''}>10%</option>
+            </select>
+          </div>
+          <div class="ef-btns">
+            <button class="btn-save-s btn-s-green" onclick="saveAll()">💾 保存</button>
+            <button class="btn-save-s btn-s-red" onclick="deleteIng(${ing.id})">削除</button>
+          </div>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 16px;color:var(--mid);font-size:13px;line-height:2">
+      該当する食材が見つかりません<br><span style="font-size:11px">「＋ 追加」から新規登録できます</span></div>`;
+  }
+}
+
+function toggleCard(id) {
+  const expand = document.getElementById('expand-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  const isOpen = expand.classList.contains('open');
+  // 他を全部閉じる
+  document.querySelectorAll('.ic-expand.open').forEach(el => {
+    el.classList.remove('open');
+    const cid = el.id.replace('expand-','');
+    const ch = document.getElementById('chevron-'+cid);
+    if (ch) ch.textContent = '›';
+  });
+  if (!isOpen) {
+    expand.classList.add('open');
+    chevron.textContent = '⌄';
+    expand.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+}
+
+function updateField(id, field, val) {
+  const ings = load();
+  const ing = ings.find(i => i.id === id);
+  if (ing) ing[field] = val;
+}
+
+function deleteIng(id) {
+  if (!confirm('この食材を削除しますか？')) return;
+  _ings = _ings.filter(i => i.id !== id);
+  render();
+  showToast('削除しました（保存ボタンで確定）');
+}
+
+function addNew() {
+  const ings = load();
+  const newId = Date.now();
+  ings.unshift({ id: newId, name: '', supplier: '', unitPrice: 0, unit: 'g', taxRate: 0.08, category: 'その他' });
+  render();
+  // 先頭カードを開く
+  setTimeout(() => {
+    toggleCard(newId);
+    const firstInp = document.querySelector(`#expand-${newId} .ef-inp`);
+    if (firstInp) firstInp.focus();
+  }, 50);
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// =============================================
+// CSV エクスポート
+// =============================================
+function exportCSV() {
+  const ings = load();
+  const rows = [['ID','食材名','業者','単価','単位','税率','カテゴリ']];
+  ings.forEach(i => rows.push([i.id, i.name, i.supplier||'', i.unitPrice, i.unit, i.taxRate===0.08?'8%':'10%', i.category||'']));
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = '食材マスター_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('📥 CSVをダウンロードしました');
+}
+
+// =============================================
+// 納品書 AI 読み取り
+// =============================================
+let invState = {};
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('inv-drop').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) processFile(f);
+}
+function handleFile(e) { if (e.target.files[0]) processFile(e.target.files[0]); }
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    invState = { b64: ev.target.result, mime: file.type || 'image/jpeg' };
+    document.getElementById('inv-preview-img').src = ev.target.result;
+    document.getElementById('inv-preview-wrap').style.display = '';
+    document.getElementById('inv-filename').textContent = file.name;
+    const btn = document.getElementById('inv-btn');
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    document.getElementById('inv-err').style.display = 'none';
+    document.getElementById('inv-result-wrap').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeInvoice() {
+  if (!invState.b64) return;
+  const btn = document.getElementById('inv-btn');
+  btn.disabled = true; btn.style.opacity = '.5';
+  document.getElementById('inv-loading').style.display = '';
+  document.getElementById('inv-result-wrap').style.display = 'none';
+  document.getElementById('inv-err').style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: invState.mime, data: invState.b64.split(',')[1] } },
+          { type: 'text', text: `この納品書から食材情報を全て抽出してください。JSONのみ返してください（前置き・コードブロック記号不要）:
+[{"name":"商品名","supplier":"業者名","unitPrice":1g/ml/個あたりの単価数値,"unit":"g or ml or 個 or 本 or 袋 or 尾","taxRate":0.08}]
+単価換算ルール（必ず最小単位に変換）:
+  1kg=2000円→unitPrice:2,unit:"g"
+  500ml=750円→unitPrice:1.5,unit:"ml"
+  10個=500円→unitPrice:50,unit:"個"
+除外: 合計金額・送料・消費税行。JSONのみ返すこと。` }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.content?.[0]?.text || '[]';
+    const items = JSON.parse(raw.replace(/```json?/g,'').replace(/```/g,'').trim());
+    invState.items = items;
+    renderInvResult(items);
+  } catch(e) {
+    const err = document.getElementById('inv-err');
+    err.textContent = '⚠️ 読み取りエラー: ' + e.message;
+    err.style.display = '';
+  } finally {
+    btn.disabled = false; btn.style.opacity = '1';
+    document.getElementById('inv-loading').style.display = 'none';
+  }
+}
+
+function renderInvResult(items) {
+  const ings = load();
+  const UNIT_NORM = {'ｇ':'g','Ｇ':'g','㎖':'ml','ｍｌ':'ml','ｋｇ':'kg','㎏':'kg','KG':'kg'};
+  let newCount = 0, updateCount = 0, sameCount = 0;
+
+  const list = document.getElementById('inv-result-list');
+  list.innerHTML = '';
+  items.forEach((item, idx) => {
+    const unit = UNIT_NORM[item.unit] || item.unit || 'g';
+    item.unit = unit;
+    const existing = ings.find(i => i.name.replace(/\s/g,'') === item.name.replace(/\s/g,'') || i.name.includes(item.name) || item.name.includes(i.name));
+    let status, statusCls;
+    if (!existing) { status='新規'; statusCls='is-new'; newCount++; }
+    else if (Math.abs(existing.unitPrice - item.unitPrice) > 0.0001) { status='更新'; statusCls='is-update'; updateCount++; }
+    else { status='変更なし'; statusCls='is-same'; sameCount++; }
+
+    const row = document.createElement('div');
+    row.className = 'inv-result-row';
+    row.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(item.name)}</div>
+        ${existing && status==='更新' ? `<div style="font-size:10px;color:var(--mid);text-decoration:line-through">¥${existing.unitPrice}/${existing.unit}</div>` : ''}
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--gd);white-space:nowrap">¥${item.unitPrice}</div>
+      <div style="font-size:12px;color:var(--mid)">${unit}</div>
+      <span class="inv-status ${statusCls}">${status}</span>`;
+    list.appendChild(row);
+  });
+
+  document.getElementById('inv-summary').textContent = `新規 ${newCount} / 更新 ${updateCount} / 変更なし ${sameCount}`;
+  document.getElementById('inv-result-wrap').style.display = '';
+}
+
+function applyInvoice() {
+  const ings = load();
+  (invState.items || []).forEach(item => {
+    const idx = ings.findIndex(i => i.name.replace(/\s/g,'') === item.name.replace(/\s/g,'') || i.name.includes(item.name) || item.name.includes(i.name));
+    if (idx >= 0) {
+      ings[idx].unitPrice = item.unitPrice;
+      ings[idx].unit = item.unit || ings[idx].unit;
+      if (item.supplier) ings[idx].supplier = item.supplier;
+    } else {
+      ings.push({ id: Date.now() + Math.random(), name: item.name, supplier: item.supplier||'', unitPrice: item.unitPrice, unit: item.unit||'g', taxRate: item.taxRate||0.08, category: 'その他' });
+    }
+  });
+  saveAll();
+  resetInvoice();
+  showToast('✅ 食材マスターを更新しました');
+  switchTab('master');
+  render();
+}
+
+function resetInvoice() {
+  invState = {};
+  document.getElementById('inv-preview-wrap').style.display = 'none';
+  document.getElementById('inv-result-wrap').style.display = 'none';
+  document.getElementById('inv-btn').disabled = true;
+  document.getElementById('inv-btn').style.opacity = '.45';
+  document.getElementById('inv-file').value = '';
+}
+
+// =============================================
+// 初期化
+// =============================================
+document.addEventListener('DOMContentLoaded', () => {
+  initCatBtns();
+  render();
+  if (GAS_URL) syncNow();
+});
+</script>
+</body>
+</html>
