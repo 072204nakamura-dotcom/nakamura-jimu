@@ -19,23 +19,23 @@
   --sky:#1e6fa8;--sky-l:#e8f3fb;
 }
 body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);min-height:100vh}
-.page{max-width:520px;margin:0 auto;padding:0 0 80px}
+.page{max-width:520px;margin:0 auto;padding:0 0 calc(80px + env(safe-area-inset-bottom,0px))}
 
 /* ── トップバー ── */
 .top-bar{
   background:var(--gd);padding:16px 18px 13px;
   display:flex;align-items:flex-end;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
+  position:sticky;top:0;z-index:200;
   box-shadow:0 3px 20px rgba(42,92,63,.4);
 }
 .top-shop{font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.22em;font-family:"Shippori Mincho B1",serif;display:block;margin-bottom:2px}
 .top-title{font-family:"Shippori Mincho B1",serif;font-size:19px;font-weight:800;color:#fff;letter-spacing:.05em;line-height:1}
-.cloud-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 12px;font-size:10px;cursor:pointer;letter-spacing:.1em;font-family:"Shippori Mincho B1",serif;transition:all .2s}
+.cloud-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 12px;font-size:10px;cursor:pointer;letter-spacing:.1em;font-family:"Shippori Mincho B1",serif;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .cloud-btn:active{opacity:.8}
 .sync-badge{font-size:9px;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:700;letter-spacing:.06em}
 
 /* ── 検索・フィルターバー ── */
-.toolbar{background:var(--cream);border-bottom:1px solid var(--border);padding:10px 12px;position:sticky;top:57px;z-index:99}
+.toolbar{background:var(--cream);border-bottom:1px solid var(--border);padding:10px 12px;position:sticky;top:103px;z-index:180}
 .search-row{display:flex;gap:8px;margin-bottom:8px}
 .search-inp{
   flex:1;height:38px;border:1.5px solid var(--border);border-radius:10px;
@@ -43,11 +43,11 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
   color:var(--ink);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a6e5e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;outline:none;
 }
 .search-inp:focus{border-color:var(--gm);background-color:#fff}
-.btn-add{height:38px;padding:0 14px;background:var(--gd);color:#fff;border:none;border-radius:10px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.06em;transition:all .18s}
+.btn-add{height:38px;padding:0 14px;background:var(--gd);color:#fff;border:none;border-radius:10px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.06em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-add:active{opacity:.85;transform:scale(.97)}
 .cat-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .cat-scroll::-webkit-scrollbar{display:none}
-.cat-btn{flex-shrink:0;padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;background:#fff;font-size:11px;color:var(--mid);cursor:pointer;transition:all .18s;font-family:"Zen Kaku Gothic New",sans-serif;white-space:nowrap}
+.cat-btn{flex-shrink:0;padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;background:#fff;font-size:11px;color:var(--mid);cursor:pointer;transition:all .18s;font-family:"Zen Kaku Gothic New",sans-serif;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .cat-btn.on{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:700}
 
 /* ── カウンター ── */
@@ -65,6 +65,9 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
   display:flex;align-items:center;justify-content:space-between;
   padding:11px 14px 9px;border-bottom:1px solid var(--line);
   cursor:pointer;
+  -webkit-tap-highlight-color:rgba(42,92,63,.1);
+  touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;
 }
 .ic-name{font-family:"Shippori Mincho B1",serif;font-size:14px;font-weight:700;flex:1;margin-right:8px;line-height:1.3}
 .ic-badges{display:flex;gap:5px;align-items:center;flex-shrink:0}
@@ -99,7 +102,7 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
 .ef-inp:focus{border-color:var(--gm)}
 select.ef-inp{cursor:pointer;-webkit-appearance:none}
 .ef-btns{display:flex;gap:8px;margin-top:4px}
-.btn-save-s{flex:1;padding:10px;border:none;border-radius:9px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .18s}
+.btn-save-s{flex:1;padding:10px;border:none;border-radius:9px;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-s-green{background:var(--gd);color:#fff}
 .btn-s-red{background:#fff;color:var(--red);border:1.5px solid var(--red)}
 
@@ -107,14 +110,16 @@ select.ef-inp{cursor:pointer;-webkit-appearance:none}
 .bottom-bar{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:520px;
-  background:rgba(248,244,237,.95);backdrop-filter:blur(10px);
-  border-top:1px solid var(--border);padding:10px 12px;
-  display:flex;gap:8px;z-index:90;
+  background:rgba(248,244,237,.98);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+  padding:10px 12px env(safe-area-inset-bottom,10px);
+  display:flex;gap:8px;z-index:300;
 }
-.btn-main{flex:2;padding:13px;border:none;border-radius:12px;font-family:"Shippori Mincho B1",serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s}
+.btn-main{flex:2;padding:13px;border:none;border-radius:12px;font-family:"Shippori Mincho B1",serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-m-green{background:var(--gd);color:#fff;box-shadow:0 4px 14px rgba(42,92,63,.3)}
 .btn-m-green:active{opacity:.88;transform:scale(.98)}
-.btn-sub{flex:1;padding:13px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--mid);letter-spacing:.06em;transition:all .18s}
+.btn-sub{flex:1;padding:13px;border:1.5px solid var(--border);border-radius:12px;background:#fff;font-family:"Shippori Mincho B1",serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--mid);letter-spacing:.06em;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-sub:active{opacity:.8}
 
 /* ── 納品書パネル ── */
@@ -136,8 +141,8 @@ select.ef-inp{cursor:pointer;-webkit-appearance:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── タブ ── */
-.tab-bar{background:var(--cream);border-bottom:2px solid var(--border);display:grid;grid-template-columns:1fr 1fr;position:sticky;top:57px;z-index:98}
-.tab-btn{padding:11px 4px 9px;border:none;background:transparent;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;margin-bottom:-2px;letter-spacing:.06em}
+.tab-bar{background:var(--cream);border-bottom:2px solid var(--border);display:grid;grid-template-columns:1fr 1fr;position:sticky;top:57px;z-index:190}
+.tab-btn{padding:11px 4px 9px;border:none;background:transparent;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;margin-bottom:-2px;letter-spacing:.06em;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .tab-btn .ico{font-size:16px}
 .tab-btn.on{color:var(--gd);border-bottom-color:var(--gd);font-weight:700}
 
