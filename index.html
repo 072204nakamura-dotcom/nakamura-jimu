@@ -180,6 +180,7 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
   <button class="btn-main btn-m-green" onclick="saveAll()">💾 保存する</button>
   <button class="btn-sub" onclick="exportCSV()">📥 CSV</button>
   <button class="btn-sub" onclick="syncNow()">🔄 同期</button>
+  <button class="btn-sub" onclick="restoreDefaults()" style="color:var(--red);border-color:var(--red);flex:0.8">↩ 復元</button>
 </div>
 
 <script>
@@ -227,13 +228,28 @@ async function syncNow() {
     const res = await fetch(GAS_URL + '?t=' + Date.now(), { method: 'GET', mode: 'cors' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-    if (json.ok && json.data && json.data.ingredients) {
-      _ings = json.data.ingredients;
+
+    const gasIngs = json.ok && json.data && json.data.ingredients ? json.data.ingredients : [];
+
+    if (gasIngs.length > 0) {
+      // GASにデータあり → ローカルに反映
+      _ings = gasIngs;
       localStorage.setItem('cafe_teru_ings', JSON.stringify(_ings));
       render();
-      showToast('✅ 最新データを取得しました');
+      showToast('✅ ' + _ings.length + '品目を取得しました');
     } else {
-      throw new Error(json.error || '不明なエラー');
+      // GASが空 → ローカルのデータをGASに送る（消えないように）
+      const local = load();
+      if (local.length > 0) {
+        fetch(GAS_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'save', data: { ingredients: local } })
+        });
+        showToast('☁️ ' + local.length + '品目をGASに登録しました');
+      } else {
+        showToast('⚠️ データがありません');
+      }
     }
   } catch(e) {
     showToast('⚠️ 同期失敗: ' + e.message);
@@ -245,8 +261,18 @@ function openGasSettings() {
   if (url === null) return;
   GAS_URL = url.trim();
   localStorage.setItem('cafe_teru_gas', GAS_URL);
-  if (GAS_URL) { showToast('✅ 設定しました'); syncNow(); }
+  // GAS設定時は同期せず、手動で同期ボタンを押してもらう
+  if (GAS_URL) { showToast('✅ 設定しました。「保存する」を押してGASにデータを送ってください'); }
   else showToast('クリアしました');
+}
+
+// データが消えた場合の緊急復元
+function restoreDefaults() {
+  if (!confirm('食材データを初期の191品目に戻しますか？\n※現在のデータは上書きされます')) return;
+  _ings = JSON.parse(JSON.stringify(DEFAULT_INGS));
+  localStorage.setItem('cafe_teru_ings', JSON.stringify(_ings));
+  render();
+  showToast('✅ 191品目を復元しました');
 }
 
 function showToast(msg) {
