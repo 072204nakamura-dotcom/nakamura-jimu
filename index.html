@@ -254,22 +254,10 @@ async function saveIngredients(){
 // レシピを保存（スタッフも使用可）
 async function saveRecipes(){
   const s = load();
+  // ローカルに保存
   localStorage.setItem('cafe_teru_v2', JSON.stringify(s));
+  // レシピだけGASに送る（食材には一切触らない）
   if(GAS_URL){
-    // 保存前にGASから最新の食材データを取得して食材を上書きしない
-    try{
-      const res = await fetch(GAS_URL+'?t='+Date.now(),{method:'GET',mode:'cors'});
-      if(res.ok){
-        const json = await res.json();
-        // GASの食材データがあれば、ローカルの食材をGASのもので上書きしてからレシピだけ送る
-        if(json.ok && json.data && json.data.ingredients && json.data.ingredients.length > 0){
-          s.ingredients = json.data.ingredients;
-          _store.ingredients = json.data.ingredients;
-          localStorage.setItem('cafe_teru_v2', JSON.stringify(s));
-        }
-      }
-    }catch(e){}
-    // レシピだけGASに送る
     try{
       await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
         body:JSON.stringify({action:'save_recipes', data:{ recipes: s.recipes }})});
