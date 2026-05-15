@@ -206,7 +206,7 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
   <button class="btn-sub" onclick="syncNow()">🔄 同期</button>
 </div>
 <div class="bottom-bar" id="bottom-bar-ing" style="display:none">
-  <button class="btn-main btn-m-g" onclick="saveAll()">💾 保存する</button>
+  <button class="btn-main btn-m-g" onclick="saveIngredients()">💾 食材を保存</button>
   <button class="btn-sub" onclick="exportIngCSV()">📥 CSV</button>
   <button class="btn-sub" onclick="syncNow()">🔄 同期</button>
   <button class="btn-sub danger" onclick="restoreDefaults()">↩ 復元</button>
@@ -238,16 +238,49 @@ function load(){
   return _store;
 }
 
-async function saveAll(){
+// 食材マスターを保存（ももやん専用）
+async function saveIngredients(){
   const s = load();
   localStorage.setItem('cafe_teru_v2', JSON.stringify(s));
   if(GAS_URL){
     try{
       await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({action:'save',data:s})});
+        body:JSON.stringify({action:'save_ingredients', data:{ ingredients: s.ingredients }})});
     }catch(e){}
   }
-  showToast('✅ 保存しました');
+  showToast('✅ 食材マスターを保存しました');
+}
+
+// レシピを保存（スタッフも使用可）
+async function saveRecipes(){
+  const s = load();
+  localStorage.setItem('cafe_teru_v2', JSON.stringify(s));
+  if(GAS_URL){
+    // 保存前にGASから最新の食材データを取得して食材を上書きしない
+    try{
+      const res = await fetch(GAS_URL+'?t='+Date.now(),{method:'GET',mode:'cors'});
+      if(res.ok){
+        const json = await res.json();
+        // GASの食材データがあれば、ローカルの食材をGASのもので上書きしてからレシピだけ送る
+        if(json.ok && json.data && json.data.ingredients && json.data.ingredients.length > 0){
+          s.ingredients = json.data.ingredients;
+          _store.ingredients = json.data.ingredients;
+          localStorage.setItem('cafe_teru_v2', JSON.stringify(s));
+        }
+      }
+    }catch(e){}
+    // レシピだけGASに送る
+    try{
+      await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({action:'save_recipes', data:{ recipes: s.recipes }})});
+    }catch(e){}
+  }
+  showToast('✅ レシピを保存しました');
+}
+
+// 後方互換用（内部から呼ばれる場合）
+async function saveAll(){
+  await saveRecipes();
 }
 
 async function syncNow(){
@@ -286,7 +319,7 @@ function restoreDefaults(){
   if(!confirm('食材データを初期の191品目に戻しますか？')) return;
   load().ingredients = JSON.parse(JSON.stringify(DEFAULT_INGS));
   localStorage.setItem('cafe_teru_v2', JSON.stringify(_store));
-  renderIngs(); showToast('✅ 191品目を復元しました');
+  saveIngredients(); renderIngs(); showToast('✅ 191品目を復元しました');
 }
 
 function showToast(msg){
@@ -643,14 +676,14 @@ function saveRecipeEdit(origId){
   };
   if(origId){ const idx=s.recipes.findIndex(x=>x.id===origId); if(idx>=0) s.recipes[idx]=rec; else s.recipes.unshift(rec); }
   else s.recipes.unshift(rec);
-  saveAll(); closeRecipeModal(); renderRecipes();
+  saveRecipes(); closeRecipeModal(); renderRecipes();
   showToast('✅ '+(origId?'保存しました':'登録しました'));
 }
 
 function deleteRecipe(id){
   if(!confirm('このレシピを削除しますか？')) return;
   load().recipes=load().recipes.filter(r=>r.id!==id);
-  saveAll(); closeRecipeModal(); renderRecipes(); showToast('削除しました');
+  saveRecipes(); closeRecipeModal(); renderRecipes(); showToast('削除しました');
 }
 
 // ===================================================
@@ -751,7 +784,7 @@ function saveIngCard(card,ingId){
     const f=el.dataset.field; const v=el.value;
     ing[f]=(f==='unitPrice'||f==='taxRate'||f==='yieldRate')?parseFloat(v)||0:v;
   });
-  saveAll(); renderIngs(); showToast('✅ 保存しました');
+  saveIngredients(); renderIngs(); showToast('✅ 食材を保存しました');
 }
 
 function deleteIng(ingId){
