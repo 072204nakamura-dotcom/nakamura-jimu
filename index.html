@@ -119,6 +119,30 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .toast{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,10px) + 8px);left:50%;transform:translateX(-50%);background:#2a5c3f;color:#fff;padding:9px 18px;border-radius:22px;font-family:"Shippori Mincho B1",serif;font-size:12px;letter-spacing:.1em;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:500;animation:fadeIn .2s ease;pointer-events:none;white-space:nowrap}
+
+/* 食材検索セレクター */
+.ing-picker{position:relative}
+.ing-picker-btn{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-family:"Zen Kaku Gothic New",sans-serif;background:#fff;text-align:left;cursor:pointer;color:var(--ink);min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.ing-picker-btn .ipb-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ing-picker-btn .ipb-arrow{color:var(--mid);font-size:10px;flex-shrink:0}
+.ing-picker-pop{position:fixed;inset:0;background:rgba(28,22,18,.5);z-index:600;display:none;align-items:flex-end}
+.ing-picker-pop.open{display:flex;animation:fadeIn .2s ease}
+.ipp-box{background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:520px;margin:0 auto;max-height:80vh;display:flex;flex-direction:column;padding:14px 14px calc(20px + env(safe-area-inset-bottom,0px))}
+.ipp-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+.ipp-search{width:100%;height:44px;border:1.5px solid var(--gm);border-radius:10px;padding:0 14px;font-size:15px;font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);background:#fff;outline:none;margin-bottom:8px;-webkit-appearance:none}
+.ipp-cats{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.ipp-cats::-webkit-scrollbar{display:none}
+.ipp-cat{flex-shrink:0;padding:4px 11px;border:1.5px solid var(--border);border-radius:16px;background:#fff;font-size:11px;color:var(--mid);cursor:pointer;white-space:nowrap}
+.ipp-cat.on{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:700}
+.ipp-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ipp-item{padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px}
+.ipp-item:active{background:var(--gxl)}
+.ipp-item .ipi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ipp-item .ipi-price{font-size:11px;color:var(--gd);font-weight:700;flex-shrink:0}
+.ipp-item .ipi-cat{font-size:9px;background:var(--gl);color:var(--gd);padding:1px 7px;border-radius:10px;flex-shrink:0}
+.ipp-empty{text-align:center;padding:30px;color:var(--mid);font-size:13px}
+.ipp-close{margin-top:8px;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-family:"Shippori Mincho B1",serif;font-size:13px;cursor:pointer;color:var(--mid);width:100%}
+
 </style>
 </head>
 <body>
@@ -200,6 +224,18 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
 
 </div><!-- /page -->
 
+<!-- 食材検索ポップアップ -->
+<div class="ing-picker-pop" id="ing-picker-pop" onclick="if(event.target===this)closeIngPicker()">
+  <div class="ipp-box">
+    <div class="ipp-handle"></div>
+    <input class="ipp-search" id="ipp-search" placeholder="食材名で検索..." oninput="renderPickerList()">
+    <div class="ipp-cats" id="ipp-cats"></div>
+    <div class="ipp-list" id="ipp-list"></div>
+    <button class="ipp-close" onclick="closeIngPicker()">閉じる</button>
+  </div>
+</div>
+
+
 <!-- ボトムバー（レシピ・食材マスタータブ） -->
 <div class="bottom-bar" id="bottom-bar-recipe" style="display:flex">
   <button class="btn-main btn-m-g" onclick="openRecipeEdit(null)">＋ レシピ追加</button>
@@ -209,7 +245,6 @@ body{background:var(--bg);font-family:"Zen Kaku Gothic New",sans-serif;color:var
   <button class="btn-main btn-m-g" onclick="saveIngredients()">💾 食材を保存</button>
   <button class="btn-sub" onclick="exportIngCSV()">📥 CSV</button>
   <button class="btn-sub" onclick="syncNow()">🔄 同期</button>
-  <button class="btn-sub danger" onclick="restoreDefaults()">↩ 復元</button>
 </div>
 
 <!-- レシピ詳細・編集モーダル -->
@@ -528,11 +563,15 @@ function openRecipeEdit(id){
   const unitOpts=['g','ml','個','本','枚','尾'].map(u=>'<option'+(u===data.baseUnit?' selected':'')+'>'+u+'</option>').join('');
 
   function makeIngRow(ri,idx){
-    const optIng=s.ingredients.map(i=>'<option value="'+i.id+'"'+(i.id===ri.ingId?' selected':'')+'>'+esc(i.name)+'</option>').join('');
     const ing=s.ingredients.find(i=>i.id===ri.ingId);
     const masterYield = ing&&ing.yieldRate<100?ing.yieldRate:100;
+    const ingName = ing ? esc(ing.name) : '食材を選択...';
     return '<div class="ri-row" data-ri="'+idx+'">'+
-      '<select data-rf="ingId">'+optIng+'</select>'+
+      '<div class="ing-picker">'+
+        '<button type="button" class="ing-picker-btn" data-rf="ingId" data-ingid="'+( ri.ingId||'')+'" onclick="openIngPicker(this)">'+
+          '<span class="ipb-name">'+ingName+'</span><span class="ipb-arrow">▼</span>'+
+        '</button>'+
+      '</div>'+
       '<input type="number" step="0.1" value="'+( ri.qty||0)+'" data-rf="qty" placeholder="量">'+
       '<input value="'+esc(ri.unit||(ing?ing.unit:'g'))+'" data-rf="unit" placeholder="単位">'+
       '<div style="font-size:11px;text-align:center">'+
@@ -611,18 +650,19 @@ function openRecipeEdit(id){
 }
 
 function addRiRow(){
-  const s=load();
   const list=document.getElementById('re-ing-list');
   const idx=list.querySelectorAll('.ri-row').length;
-  const ing=s.ingredients[0]||{id:1,unit:'g',yieldRate:100};
-  const optIng=s.ingredients.map(i=>'<option value="'+i.id+'"'+(i.id===ing.id?' selected':'')+'>'+esc(i.name)+'</option>').join('');
   const div=document.createElement('div'); div.className='ri-row'; div.dataset.ri=idx;
   div.innerHTML=
-    '<select data-rf="ingId">'+optIng+'</select>'+
+    '<div class="ing-picker">'+
+      '<button type="button" class="ing-picker-btn" data-rf="ingId" data-ingid="" onclick="openIngPicker(this)">'+
+        '<span class="ipb-name">食材を選択...</span><span class="ipb-arrow">▼</span>'+
+      '</button>'+
+    '</div>'+
     '<input type="number" step="0.1" value="0" data-rf="qty" placeholder="量">'+
-    '<input value="'+esc(ing.unit)+'" data-rf="unit" placeholder="単位">'+
+    '<input value="g" data-rf="unit" placeholder="単位">'+
     '<div style="font-size:11px;text-align:center">'+
-      '<input type="number" min="1" max="100" step="1" value="'+( ing.yieldRate<100?ing.yieldRate:100)+'" data-rf="yieldRate" style="width:100%;text-align:center">'+
+      '<input type="number" min="1" max="100" step="1" value="100" data-rf="yieldRate" style="width:100%;text-align:center">'+
       '<div style="font-size:9px;color:var(--mid)">歩留%</div>'+
     '</div>'+
     '<button onclick="this.closest(\'.ri-row\').remove();updateRiCost()" style="background:none;border:none;font-size:15px;color:var(--mid);cursor:pointer;padding:0">✕</button>';
@@ -649,14 +689,88 @@ function addStepRow(){
   list.appendChild(div);
 }
 
+
+// ===================================================
+// 食材検索ピッカー
+// ===================================================
+let _pickerTargetBtn = null;
+let _pickerCat = 'すべて';
+
+function openIngPicker(btn){
+  _pickerTargetBtn = btn;
+  _pickerCat = 'すべて';
+  document.getElementById('ipp-search').value = '';
+  // カテゴリボタン生成
+  const catWrap = document.getElementById('ipp-cats');
+  catWrap.innerHTML = ING_CATS.map(c =>
+    '<button class="ipp-cat'+(c==='すべて'?' on':'')+'" onclick="pickerSetCat(this,\''+c+'\')">'+c+'</button>'
+  ).join('');
+  renderPickerList();
+  document.getElementById('ing-picker-pop').classList.add('open');
+  setTimeout(()=>document.getElementById('ipp-search').focus(), 100);
+}
+
+function pickerSetCat(el, cat){
+  _pickerCat = cat;
+  document.querySelectorAll('#ipp-cats .ipp-cat').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  renderPickerList();
+}
+
+function renderPickerList(){
+  const s = load();
+  const q = (document.getElementById('ipp-search').value||'').trim().toLowerCase();
+  const filtered = s.ingredients.filter(i=>{
+    if(_pickerCat!=='すべて' && i.category!==_pickerCat) return false;
+    if(q && !i.name.toLowerCase().includes(q) && !(i.supplier||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const list = document.getElementById('ipp-list');
+  if(!filtered.length){
+    list.innerHTML = '<div class="ipp-empty">該当する食材がありません</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(i=>
+    '<div class="ipp-item" onclick="selectIng('+i.id+')">'+
+      '<span class="ipi-name">'+esc(i.name)+'</span>'+
+      '<span class="ipi-cat">'+esc(i.category||'その他')+'</span>'+
+      '<span class="ipi-price">¥'+i.unitPrice.toLocaleString('ja-JP',{maximumFractionDigits:4})+'/'+esc(i.unit)+'</span>'+
+    '</div>'
+  ).join('');
+}
+
+function selectIng(ingId){
+  const s = load();
+  const ing = s.ingredients.find(i=>i.id===ingId);
+  if(!ing || !_pickerTargetBtn) return;
+  // ボタンの表示を更新
+  _pickerTargetBtn.dataset.ingid = ingId;
+  _pickerTargetBtn.querySelector('.ipb-name').textContent = ing.name;
+  // 同じ行の単位を自動入力
+  const row = _pickerTargetBtn.closest('.ri-row');
+  if(row){
+    const unitInp = row.querySelector('input[data-rf="unit"]');
+    if(unitInp && (!unitInp.value || unitInp.value==='g')) unitInp.value = ing.unit;
+    const yrInp = row.querySelector('input[data-rf="yieldRate"]');
+    if(yrInp) yrInp.value = (ing.yieldRate && ing.yieldRate<100) ? ing.yieldRate : 100;
+  }
+  closeIngPicker();
+  updateRiCost();
+}
+
+function closeIngPicker(){
+  document.getElementById('ing-picker-pop').classList.remove('open');
+  _pickerTargetBtn = null;
+}
+
 function updateRiCost(){
   const s=load();
   let total=0;
   document.querySelectorAll('#re-ing-list .ri-row').forEach(row=>{
-    const sel=row.querySelector('select[data-rf="ingId"]');
+    const btn=row.querySelector('.ing-picker-btn[data-rf="ingId"]');
     const qtyInp=row.querySelector('input[data-rf="qty"]');
     const yrInp=row.querySelector('input[data-rf="yieldRate"]');
-    const ing=s.ingredients.find(i=>i.id===parseInt(sel?.value));
+    const ing=s.ingredients.find(i=>i.id===parseInt(btn?.dataset.ingid));
     if(!ing||!qtyInp) return;
     const yr=parseFloat(yrInp?.value)||100;
     const realP=ing.unitPrice/(yr/100);
@@ -674,11 +788,13 @@ function saveRecipeEdit(origId){
   if(!name){ alert('レシピ名を入力してください'); return; }
   const ings=[];
   document.querySelectorAll('#re-ing-list .ri-row').forEach(row=>{
-    const sel=row.querySelector('select[data-rf="ingId"]');
+    const btn=row.querySelector('.ing-picker-btn[data-rf="ingId"]');
     const qtyInp=row.querySelector('input[data-rf="qty"]');
     const unitInp=row.querySelector('input[data-rf="unit"]');
     const yrInp=row.querySelector('input[data-rf="yieldRate"]');
-    ings.push({ingId:parseInt(sel?.value),qty:parseFloat(qtyInp?.value)||0,unit:unitInp?.value||'g',yieldRate:parseFloat(yrInp?.value)||100});
+    const ingId=parseInt(btn?.dataset.ingid);
+    if(!ingId) return;
+    ings.push({ingId:ingId,qty:parseFloat(qtyInp?.value)||0,unit:unitInp?.value||'g',yieldRate:parseFloat(yrInp?.value)||100});
   });
   const steps=[];
   document.querySelectorAll('#re-step-list .step-row').forEach(row=>{
