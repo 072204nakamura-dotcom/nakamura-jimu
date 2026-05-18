@@ -1317,8 +1317,8 @@ function buildHalfTable(y, m, fromDay, toDay){
       } else if(asgn){
         rowTotal++;
         const ro=ROLES.find(r=>r.id===asgn.role);
-        bg=ro?ro.color+'33':'rgba(58,138,90,.2)';
-        cell=`<b style="color:${ro?ro.color:'#3a8a5a'};font-size:9pt">${asgn.role}</b>`;
+        bg=ro?ro.color+'55':'rgba(58,138,90,.3)';
+        cell=`<b style="color:${ro?ro.color:'#3a8a5a'};font-size:10pt">${asgn.role}</b>`;
       } else if(!avail){
         bg='rgba(192,48,48,.1)';
         cell='<span style="color:#c03030;font-size:10pt">✕</span>';
