@@ -1024,7 +1024,7 @@ async function analyzeInvoice(){
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:invState.mime,data:invState.b64.split(',')[1]}},
           {type:'text',text:'この納品書から食材情報を全て抽出してください。JSONのみ返してください（前置き・コードブロック不要）:\n[{"name":"商品名","supplier":"業者名","unitPrice":1単位あたりの数値,"unit":"g or ml or 個 or 本 or 袋 or 尾","taxRate":0.08}]\n単価換算: 1kg=2000円→unitPrice:2,unit:"g" / 500ml=750円→unitPrice:1.5,unit:"ml"\n除外: 合計・送料・税額行。JSONのみ。'}
