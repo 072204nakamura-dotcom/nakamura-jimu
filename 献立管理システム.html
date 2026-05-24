@@ -1885,23 +1885,56 @@ function printRecord(id){
   openPrintWindow(r);
 }
 
-// 印刷（同一ページ内のA4レイヤーを表示して印刷・iPhone Safari対応）
+// 印刷（iframe方式・iPhone Safari対応）
 function openPrintWindow(r){
-  const html = buildPrintHTML(r);
-  // 既存の印刷レイヤーを削除
-  const old = document.getElementById('_print_layer');
-  if(old) old.remove();
-  // 新しい印刷レイヤーを作成
-  const div = document.createElement('div');
-  div.id = '_print_layer';
-  div.innerHTML = html;
-  document.body.appendChild(div);
-  // 少し待ってから印刷
-  setTimeout(()=>{
-    window.print();
-    // 印刷ダイアログを閉じた後にレイヤーを削除
-    setTimeout(()=>{ div.remove(); }, 2000);
-  }, 300);
+  const sheetHtml = buildPrintHTML(r);
+
+  // 完全なHTMLドキュメント（buildPrintHTMLが返すdivをそのまま body 内に配置）
+  const fullHtml = `<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=210mm">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  @page{size:A4 portrait;margin:0}
+  html,body{
+    width:210mm;
+    min-height:297mm;
+    background:#f9f6f0;
+    font-family:'Shippori Mincho B1',serif;
+  }
+  /* buildPrintHTML が返す div の position:fixed を打ち消す */
+  body > div {
+    position:relative !important;
+    top:auto !important;
+    left:auto !important;
+    z-index:auto !important;
+    width:210mm !important;
+    height:297mm !important;
+  }
+</style>
+</head><body>
+${sheetHtml}
+<script>window.onload=function(){setTimeout(function(){window.print()},500)}<\/script>
+</body></html>`;
+
+  // 既存のiframeを削除
+  const oldF = document.getElementById('_print_iframe');
+  if(oldF) oldF.remove();
+  // iframeで印刷
+  const iframe = document.createElement('iframe');
+  iframe.id = '_print_iframe';
+  iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:9999;opacity:0;pointer-events:none';
+  document.body.appendChild(iframe);
+  iframe.onload = function(){
+    setTimeout(()=>{
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(()=>iframe.remove(), 2500);
+    }, 800);
+  };
+  const blob = new Blob([fullHtml], {type:'text/html;charset=utf-8'});
+  iframe.src = URL.createObjectURL(blob);
 }
 
 // A4印刷用HTMLを生成（divのみ・同一ページ内に挿入）
