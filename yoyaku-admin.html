@@ -42,6 +42,7 @@
   .mode{width:100%; margin:6px 0; padding:7px 0; border-radius:7px; font-size:12px; letter-spacing:.06em; color:#fff;}
   .mode.both{background:linear-gradient(90deg,var(--lunch) 0 50%,var(--dinner) 50% 100%); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35);}
   .mode.dinner{background:var(--dinner);}
+  .mode.lunch{background:var(--lunch); color:#6a5410;}
   .mode.closed{background:#c9c3b8; color:#6b655b;}
   .svc{display:flex; align-items:center; gap:5px; margin-top:5px;}
   .svc .tag{width:26px; height:22px; border-radius:5px; font-size:11px; color:#fff; display:flex; align-items:center; justify-content:center; flex:none;}
@@ -223,20 +224,16 @@ function renderGrid(){
     card.appendChild(dl);
 
     const mb=document.createElement("button");
-    const label={both:"昼＋夜", dinner:"夜のみ", closed:"休み"};
+    const label={both:"昼＋夜", dinner:"夜のみ", lunch:"昼のみ", closed:"休み"};
     mb.className="mode "+day.mode; mb.textContent=label[day.mode];
     mb.onclick=()=>{
-      day.mode = day.mode==="both" ? "dinner" : day.mode==="dinner" ? "closed" : "both";
+      day.mode = day.mode==="both" ? "dinner" : day.mode==="dinner" ? "lunch" : day.mode==="lunch" ? "closed" : "both";
       localSave(); renderGrid();
     };
     card.appendChild(mb);
 
-    if(day.mode!=="closed"){
-      if(day.mode==="both"){
-        card.appendChild(svcRow("l","昼",ds,day));
-      }
-      card.appendChild(svcRow("d","夜",ds,day));
-    }
+    if(day.mode==="both"||day.mode==="lunch") card.appendChild(svcRow("l","昼",ds,day));
+    if(day.mode==="both"||day.mode==="dinner") card.appendChild(svcRow("d","夜",ds,day));
     g.appendChild(card);
   });
 }
@@ -274,8 +271,14 @@ function importBulk(){
       if(typeof v.lunch==="number")  day.lunch=v.lunch;
       if(typeof v.dinner==="number") day.dinner=v.dinner;
       /* 予約が入っている日は自動で営業扱いに切り替える（休み表示事故の防止） */
-      if(day.lunch>0) day.mode="both";
-      else if(day.dinner>0 && day.mode==="closed") day.mode="dinner";
+      if(day.lunch>0 && day.dinner>0) day.mode="both";
+      else if(day.lunch>0){
+        if(day.mode==="closed") day.mode="lunch";
+        else if(day.mode==="dinner") day.mode="both";
+      }else if(day.dinner>0){
+        if(day.mode==="closed") day.mode="dinner";
+        else if(day.mode==="lunch") day.mode="both";
+      }
       n++;
     });
     localSave(); renderGrid(); renderImage();
@@ -392,6 +395,8 @@ function drawCell(c,x,y,w,h,ds,day){
   if(day.mode==="both"){
     drawBar(c,bx,y+176,barW,barH,"l",day.lunch);
     drawBar(c,bx,y+176+barH+34,barW,barH,"d",day.dinner);
+  }else if(day.mode==="lunch"){
+    drawBar(c,bx,y+256,barW,barH,"l",day.lunch);
   }else{
     drawBar(c,bx,y+256,barW,barH,"d",day.dinner);
   }
@@ -428,6 +433,7 @@ function roundRect(c,x,y,w,h,r){
 function sendToLine(){
   const msg=document.getElementById("sendMsg");
   if(!state.gasUrl){ msg.className="msg ng"; msg.textContent="⑤設定のGASのURLが空です。先に設定してください。"; return; }
+  state.savedAt=new Date().toISOString(); localSave();
   fetch(state.gasUrl,{ method:"POST", mode:"no-cors",
     headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"save", data:state}) })
   .then(()=>{ msg.className="msg ok";
@@ -446,6 +452,7 @@ function downloadPng(){
 function cloudSave(){
   const msg=document.getElementById("cloudMsg");
   if(!state.gasUrl){ msg.className="msg ng"; msg.textContent="GASのURLが空です。"; return; }
+  state.savedAt=new Date().toISOString(); localSave();
   fetch(state.gasUrl,{ method:"POST", mode:"no-cors",
     headers:{"Content-Type":"text/plain"},
     body:JSON.stringify({action:"save", data:state}) })

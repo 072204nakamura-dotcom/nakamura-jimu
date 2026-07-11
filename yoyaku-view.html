@@ -78,6 +78,7 @@
 <div class="wrap">
   <h1>空席カレンダー</h1>
   <div class="period" id="period"></div>
+  <div class="period" id="updated" style="font-size:12px; margin-top:4px;"></div>
 
   <div class="legend">
     <span class="chip l"></span> 昼（ランチ）　<span class="chip d"></span> 夜（ディナー）<br>
@@ -140,8 +141,8 @@ function render(st){
       card.appendChild(c);
     }else{
       const bars=document.createElement("div"); bars.className="bars";
-      if(day.mode==="both") bars.appendChild(bar("l","昼",day.lunch,st));
-      bars.appendChild(bar("d","夜",day.dinner,st));
+      if(day.mode==="both"||day.mode==="lunch") bars.appendChild(bar("l","昼",day.lunch,st));
+      if(day.mode==="both"||day.mode==="dinner") bars.appendChild(bar("d","夜",day.dinner,st));
       card.appendChild(bars);
     }
     daysEl.appendChild(card);
@@ -155,6 +156,14 @@ function render(st){
   }else{
     statusEl.style.display="block";
     statusEl.textContent="ただいま次の期間を準備中です。\nお電話でお問い合わせください。";
+  }
+
+  if(st.savedAt){
+    const u=new Date(st.savedAt);
+    if(!isNaN(u)){
+      document.getElementById("updated").textContent=
+        (u.getMonth()+1)+"/"+u.getDate()+"（"+WD[u.getDay()]+"）"+u.getHours()+":"+pad(u.getMinutes())+" 更新";
+    }
   }
 
   if(st.reserveUrl){
@@ -184,7 +193,7 @@ function demoData(){
       : {mode:(wd===3||wd===4||wd===0)?"both":"dinner",
          lunch:[2,8,14][i%3], dinner:[6,15,23][i%3]};
   }
-  return {startDate:ymd(t), days, reserveUrl:"tel:0828541299",
+  return {startDate:ymd(t), days, reserveUrl:"tel:0828541299", savedAt:new Date().toISOString(),
           lOk:12,lFew:21,dOk:12,dFew:21};
 }
 
