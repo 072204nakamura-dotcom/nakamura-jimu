@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空席カレンダー管理｜洋食だいにんぐなかむら</title>
+<style>
+  :root{
+    --gold:#a08b52; --gold-dark:#82703f; --ink:#2e2b26; --sub:#7a746a;
+    --bg:#f6f4ef; --card:#ffffff; --line:#e3ded4;
+    --sun:#b0413e; --sat:#3b5b92;
+    --lunch:#f2c94c; --dinner:#2d4f9e;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif; background:var(--bg); color:var(--ink); padding-bottom:80px;}
+  header.app{background:linear-gradient(135deg,#3a352c,#57503f); color:#f3efe6; padding:22px 16px 18px; text-align:center;}
+  header.app h1{font-family:"Yu Mincho","Hiragino Mincho ProN",serif; font-size:22px; letter-spacing:.18em; font-weight:600;}
+  header.app p{font-size:12px; letter-spacing:.12em; margin-top:6px; color:#cfc7b4;}
+  main{max-width:1080px; margin:0 auto; padding:16px;}
+  section{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:16px;}
+  h2{font-family:"Yu Mincho","Hiragino Mincho ProN",serif; font-size:17px; letter-spacing:.14em; color:var(--gold-dark); border-left:4px solid var(--gold); padding-left:10px; margin-bottom:12px;}
+  .hint{font-size:12px; color:var(--sub); line-height:1.7; margin-bottom:10px;}
+  button{font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-size:14px;}
+  .btn{background:var(--gold); color:#fff; padding:10px 18px; letter-spacing:.08em;}
+  .btn:active{background:var(--gold-dark);}
+  .btn.ghost{background:#fff; color:var(--gold-dark); border:1px solid var(--gold);}
+  .btn.big{width:100%; padding:14px; font-size:16px; margin-top:8px;}
+  .btn.blue{background:var(--dinner);}
+  .btn.grey{background:#8b857a;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  input[type=date], input[type=number], input[type=text], input[type=url]{
+    font-family:inherit; font-size:14px; padding:9px 10px; border:1px solid var(--line);
+    border-radius:8px; background:#fff; color:var(--ink);
+  }
+  input[type=number]{width:72px; text-align:center;}
+  label.f{font-size:12px; color:var(--sub); display:block; margin-bottom:4px;}
+  /* 日別グリッド */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(136px,1fr)); gap:8px;}
+  .day{border:1px solid var(--line); border-radius:10px; padding:8px; background:#fcfbf8;}
+  .day .d{font-family:"Yu Mincho",serif; font-size:15px; font-weight:700; text-align:center;}
+  .day .d.sun{color:var(--sun);} .day .d.sat{color:var(--sat);}
+  .mode{width:100%; margin:6px 0; padding:7px 0; border-radius:7px; font-size:12px; letter-spacing:.06em; color:#fff;}
+  .mode.both{background:linear-gradient(90deg,var(--lunch) 0 50%,var(--dinner) 50% 100%); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35);}
+  .mode.dinner{background:var(--dinner);}
+  .mode.closed{background:#c9c3b8; color:#6b655b;}
+  .svc{display:flex; align-items:center; gap:5px; margin-top:5px;}
+  .svc .tag{width:26px; height:22px; border-radius:5px; font-size:11px; color:#fff; display:flex; align-items:center; justify-content:center; flex:none;}
+  .tag.l{background:var(--lunch); color:#6a5410;} .tag.d{background:var(--dinner);}
+  .svc input{width:100%; min-width:0; padding:6px 4px;}
+  .svc .st{width:26px; text-align:center; font-size:16px; font-weight:700; flex:none;}
+  .st.ok{color:#2e7d4f;} .st.few{color:#c07a17;} .st.full{color:var(--sun); font-size:11px;}
+  textarea{width:100%; min-height:96px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; border:1px solid var(--line); border-radius:8px; padding:10px; background:#fff;}
+  canvas#cv{display:none;}
+  #preview{width:100%; border:1px solid var(--line); border-radius:10px; display:block;}
+  .msg{font-size:13px; margin-top:8px; padding:10px 12px; border-radius:8px; display:none; line-height:1.6;}
+  .msg.ok{display:block; background:#eef6ee; color:#2e6b45; border:1px solid #cfe5cf;}
+  .msg.ng{display:block; background:#faeeed; color:#9c3a36; border:1px solid #ecd2d0;}
+  .settings-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:640px){ .settings-grid{grid-template-columns:1fr 1fr;} }
+  .th-row{display:flex; gap:14px; flex-wrap:wrap;}
+  footer{max-width:1080px; margin:24px auto 0; padding:0 16px; font-size:11px; color:var(--sub); text-align:center; letter-spacing:.08em;}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <h1>空席カレンダー管理</h1>
+  <p>洋食だいにんぐなかむら｜LINEリッチメニュー自動更新</p>
+</header>
+
+<main>
+
+  <!-- ①期間 -->
+  <section>
+    <h2>① 表示する2週間</h2>
+    <div class="row">
+      <div>
+        <label class="f">開始日（この日から14日分）</label>
+        <input type="date" id="startDate">
+      </div>
+      <button class="btn ghost" id="btnToday" style="margin-top:18px;">今日から</button>
+      <button class="btn ghost" id="btnNextMon" style="margin-top:18px;">来週月曜から</button>
+    </div>
+  </section>
+
+  <!-- ②日別 -->
+  <section>
+    <h2>② 営業と予約人数</h2>
+    <p class="hint">
+      色のボタンをタップすると「昼＋夜 → 夜のみ → 休み」の順に切り替わります。<br>
+      予約人数は昼・夜べつに入力。○△満席は自動判定されます（基準は⑤で変更できます）。
+    </p>
+    <div class="grid" id="dayGrid"></div>
+  </section>
+
+  <!-- ③一括取込 -->
+  <section>
+    <h2>③ 予約データの一括取り込み</h2>
+    <p class="hint">
+      Claudeに「予約表を更新して」と頼むと、ここに予約人数データが貼り付けられて自動で取り込まれます。手動で貼り付けて「取り込む」を押してもOKです。<br>
+      形式：<code>{"2026-07-13":{"lunch":4,"dinner":12}, ...}</code>
+    </p>
+    <textarea id="bulkData" placeholder='{"2026-07-13":{"lunch":4,"dinner":12}}'></textarea>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn" id="btnImport">取り込む</button>
+    </div>
+    <div class="msg" id="importMsg"></div>
+  </section>
+
+  <!-- ④プレビューと反映 -->
+  <section>
+    <h2>④ プレビューと反映</h2>
+    <p class="hint">
+      「保存して反映する」を押すと、お客さまがLINEの「空き状況を見る」を開いたときに最新の内容が表示されます。<br>
+      画像は反映には不要です（インスタのストーリーズ投稿などに使えます）。
+    </p>
+    <button class="btn big blue" id="btnSend">保存して公開ページに反映する</button>
+    <div class="msg" id="sendMsg"></div>
+    <button class="btn big" id="btnRender" style="margin-top:16px;">画像プレビューを更新する</button>
+    <div style="margin-top:12px;">
+      <img id="preview" alt="カレンダー画像プレビュー">
+      <canvas id="cv" width="2500" height="1686"></canvas>
+    </div>
+    <button class="btn big ghost" id="btnDownload">画像をダウンロード（SNS投稿用）</button>
+  </section>
+
+  <!-- ⑤設定 -->
+  <section>
+    <h2>⑤ 設定</h2>
+    <div class="settings-grid">
+      <div>
+        <label class="f">GASのURL（デプロイしたウェブアプリURL）</label>
+        <input type="url" id="gasUrl" style="width:100%;" placeholder="https://script.google.com/macros/s/....../exec">
+      </div>
+      <div>
+        <label class="f">予約ページURL（公開ページの「ご予約はこちら」ボタンのリンク先。tel:0828541299 のような電話リンクも可）</label>
+        <input type="url" id="reserveUrl" style="width:100%;" placeholder="https://autoreserve.com/ja/restaurants/......">
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <label class="f">○△の基準（予約合計がこの人数「以下」なら）</label>
+      <div class="th-row">
+        <div class="row">昼：○は <input type="number" id="lOk" min="0"> 名まで／△は <input type="number" id="lFew" min="0"> 名まで</div>
+      </div>
+      <div class="th-row" style="margin-top:8px;">
+        <div class="row">夜：○は <input type="number" id="dOk" min="0"> 名まで／△は <input type="number" id="dFew" min="0"> 名まで</div>
+      </div>
+      <p class="hint" style="margin-top:8px;">△の人数を超えると「満席」表示になります。初期値は24席を基準に、○＝12名まで／△＝21名まで。</p>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn grey" id="btnCloudSave">クラウドに保存</button>
+      <button class="btn ghost" id="btnCloudLoad">クラウドから読込</button>
+    </div>
+    <div class="msg" id="cloudMsg"></div>
+  </section>
+
+</main>
+
+<footer>合同会社輝煌｜空席カレンダー v1.0</footer>
+
+<script>
+/* ================= 状態 ================= */
+const DEFAULTS = { lOk:12, lFew:21, dOk:12, dFew:21 };
+let state = {
+  startDate: null,          // "YYYY-MM-DD"
+  days: {},                 // { "YYYY-MM-DD": {mode:"both"|"dinner"|"closed", lunch:0, dinner:0} }
+  gasUrl: "https://script.google.com/macros/s/AKfycbz0iY5thP06nRqA6YZ3Koa2QVHW9jywO_-Di9r4CiaIJaxs4gXXCEKkG2uAcM8JTX1g/exec", reserveUrl: "",
+  lOk:DEFAULTS.lOk, lFew:DEFAULTS.lFew, dOk:DEFAULTS.dOk, dFew:DEFAULTS.dFew
+};
+const WD = ["日","月","火","水","木","金","土"];
+
+function pad(n){return String(n).padStart(2,"0");}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function parseYmd(s){const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d);}
+function todayYmd(){return ymd(new Date());}
+
+function defaultModeFor(dateStr){
+  // 月曜は休みが多いので初期値だけ休みにしておく（あとからタップで変更可）
+  const wd = parseYmd(dateStr).getDay();
+  return wd===1 ? "closed" : "dinner";
+}
+function ensureDay(dateStr){
+  if(!state.days[dateStr]) state.days[dateStr] = {mode:defaultModeFor(dateStr), lunch:0, dinner:0};
+  return state.days[dateStr];
+}
+function periodDates(){
+  const out=[]; const s=parseYmd(state.startDate);
+  for(let i=0;i<14;i++){const d=new Date(s); d.setDate(s.getDate()+i); out.push(ymd(d));}
+  return out;
+}
+
+/* ================= 保存（この端末） ================= */
+function localSave(){
+  try{ localStorage.setItem("vacancy-app", JSON.stringify(state)); }catch(e){}
+}
+function localLoad(){
+  try{
+    const raw = localStorage.getItem("vacancy-app");
+    if(raw){ const s=JSON.parse(raw); Object.assign(state, s); }
+  }catch(e){}
+}
+
+/* ================= 判定 ================= */
+function statusOf(kind, pax){
+  const ok  = kind==="l" ? state.lOk  : state.dOk;
+  const few = kind==="l" ? state.lFew : state.dFew;
+  if(pax<=ok) return "ok";
+  if(pax<=few) return "few";
+  return "full";
+}
+const ST_CHAR = {ok:"○", few:"△", full:"満席"};
+
+/* ================= ②日別グリッド描画 ================= */
+function renderGrid(){
+  const g=document.getElementById("dayGrid"); g.innerHTML="";
+  periodDates().forEach(ds=>{
+    const day=ensureDay(ds);
+    const d=parseYmd(ds); const wd=d.getDay();
+    const card=document.createElement("div"); card.className="day";
+    const dl=document.createElement("div");
+    dl.className="d"+(wd===0?" sun":wd===6?" sat":"");
+    dl.textContent=(d.getMonth()+1)+"/"+d.getDate()+"（"+WD[wd]+"）";
+    card.appendChild(dl);
+
+    const mb=document.createElement("button");
+    const label={both:"昼＋夜", dinner:"夜のみ", closed:"休み"};
+    mb.className="mode "+day.mode; mb.textContent=label[day.mode];
+    mb.onclick=()=>{
+      day.mode = day.mode==="both" ? "dinner" : day.mode==="dinner" ? "closed" : "both";
+      localSave(); renderGrid();
+    };
+    card.appendChild(mb);
+
+    if(day.mode!=="closed"){
+      if(day.mode==="both"){
+        card.appendChild(svcRow("l","昼",ds,day));
+      }
+      card.appendChild(svcRow("d","夜",ds,day));
+    }
+    g.appendChild(card);
+  });
+}
+function svcRow(kind,txt,ds,day){
+  const row=document.createElement("div"); row.className="svc";
+  const tag=document.createElement("span"); tag.className="tag "+kind; tag.textContent=txt;
+  const inp=document.createElement("input"); inp.type="number"; inp.min=0;
+  inp.value = kind==="l" ? day.lunch : day.dinner;
+  const st=document.createElement("span");
+  function upd(){
+    const v=Math.max(0, Number(inp.value)||0);
+    if(kind==="l") day.lunch=v; else day.dinner=v;
+    const s=statusOf(kind,v);
+    st.className="st "+s; st.textContent=ST_CHAR[s];
+    localSave();
+  }
+  inp.oninput=upd;
+  row.appendChild(tag); row.appendChild(inp); row.appendChild(st);
+  upd();
+  return row;
+}
+
+/* ================= ③一括取込 ================= */
+function importBulk(){
+  const msg=document.getElementById("importMsg");
+  try{
+    const txt=document.getElementById("bulkData").value.trim();
+    if(!txt) throw new Error("データが空です");
+    const obj=JSON.parse(txt);
+    let n=0;
+    Object.keys(obj).forEach(ds=>{
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)) return;
+      const day=ensureDay(ds);
+      const v=obj[ds]||{};
+      if(typeof v.lunch==="number")  day.lunch=v.lunch;
+      if(typeof v.dinner==="number") day.dinner=v.dinner;
+      /* 予約が入っている日は自動で営業扱いに切り替える（休み表示事故の防止） */
+      if(day.lunch>0) day.mode="both";
+      else if(day.dinner>0 && day.mode==="closed") day.mode="dinner";
+      n++;
+    });
+    localSave(); renderGrid(); renderImage();
+    msg.className="msg ok"; msg.textContent=n+"日分を取り込みました。②の営業日と数字を確認してから「LINEに反映」してください。";
+  }catch(e){
+    msg.className="msg ng"; msg.textContent="取り込めませんでした："+e.message;
+  }
+}
+
+/* ================= ④画像生成（2500×1686） ================= */
+const MINCHO='"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif';
+const NUMSERIF='Georgia,"Times New Roman",serif';
+
+function renderImage(){
+  const cv=document.getElementById("cv"); const c=cv.getContext("2d");
+  const W=2500,H=1686;
+
+  /* 背景：薄いグレーのコンクリート調 */
+  const bgGrad=c.createLinearGradient(0,0,W,H);
+  bgGrad.addColorStop(0,"#dcdcda"); bgGrad.addColorStop(.5,"#d3d3d1"); bgGrad.addColorStop(1,"#d8d7d3");
+  c.fillStyle=bgGrad; c.fillRect(0,0,W,H);
+  /* うっすらテクスチャ */
+  c.save(); c.globalAlpha=.05;
+  for(let i=0;i<900;i++){
+    c.fillStyle = i%2 ? "#ffffff" : "#8a8a86";
+    c.fillRect(Math.random()*W, Math.random()*H, 2, 2);
+  }
+  c.restore();
+
+  const dates=periodDates();
+  const first=parseYmd(dates[0]), last=parseYmd(dates[13]);
+
+  /* ---- ヘッダー ---- */
+  c.fillStyle="#33312d";
+  c.font="600 92px "+MINCHO;
+  c.textBaseline="alphabetic";
+  c.fillText("空席カレンダー", 90, 150);
+  c.font="400 52px "+NUMSERIF;
+  const period =
+    first.getFullYear()+"."+(first.getMonth()+1)+"."+first.getDate()+"（"+WD[first.getDay()]+"）"
+    +" 〜 "+(last.getMonth()+1)+"."+last.getDate()+"（"+WD[last.getDay()]+"）";
+  c.font="400 54px "+MINCHO;
+  c.fillStyle="#55524c";
+  c.fillText(period, 94, 226);
+
+  /* ---- 凡例 ---- */
+  const lx=1560, ly=64, lw=850, lh=190;
+  c.fillStyle="rgba(255,255,255,.92)"; c.fillRect(lx,ly,lw,lh);
+  c.strokeStyle="#9c968a"; c.lineWidth=2; c.strokeRect(lx,ly,lw,lh);
+  c.font="400 40px "+MINCHO; c.fillStyle="#33312d";
+  /* 1行目：昼夜 */
+  c.fillStyle="#f2c94c"; c.fillRect(lx+34, ly+34, 84, 40);
+  c.fillStyle="#33312d"; c.fillText("昼（ランチ）", lx+134, ly+68);
+  c.fillStyle="#2d4f9e"; c.fillRect(lx+450, ly+34, 84, 40);
+  c.fillStyle="#33312d"; c.fillText("夜（ディナー）", lx+550, ly+68);
+  /* 2行目：記号 */
+  c.font="400 38px "+MINCHO;
+  c.fillText("○ 空席あり　　△ 残りわずか", lx+34, ly+146);
+  c.fillStyle="#b7b2a7"; roundRect(c, lx+560, ly+112, 96, 44, 8); c.fill();
+  c.fillStyle="#ffffff"; c.font="600 30px "+MINCHO; c.fillText("満席", lx+578, ly+145);
+  c.fillStyle="#33312d"; c.font="400 38px "+MINCHO;
+  c.fillText("＝満席　　✕ 休み", lx+666, ly+146);
+
+  /* ---- グリッド ---- */
+  const gx=70, gy=300, gw=W-140;
+  const cols=7, rows=2, gap=14;
+  const cw=(gw-gap*(cols-1))/cols;         // ≒334
+  const ch=600;
+  for(let i=0;i<14;i++){
+    const ds=dates[i]; const day=ensureDay(ds);
+    const col=i%7, row=Math.floor(i/7);
+    const x=gx+col*(cw+gap), y=gy+row*(ch+gap);
+    drawCell(c, x, y, cw, ch, ds, day);
+  }
+
+  /* ---- フッター ---- */
+  c.font="400 46px "+MINCHO; c.fillStyle="#4a463f"; c.textAlign="center";
+  c.fillText("洋食だいにんぐなかむら｜タップしてご予約ページへ", W/2, H-46);
+  c.textAlign="left";
+
+  /* プレビュー反映 */
+  document.getElementById("preview").src = cv.toDataURL("image/png");
+}
+
+function drawCell(c,x,y,w,h,ds,day){
+  const d=parseYmd(ds); const wd=d.getDay();
+  /* 白マス */
+  c.fillStyle="rgba(255,255,255,.94)"; c.fillRect(x,y,w,h);
+  c.strokeStyle="#b9b4a8"; c.lineWidth=2; c.strokeRect(x,y,w,h);
+
+  /* 日付 */
+  c.textAlign="center";
+  c.fillStyle = wd===0 ? "#b0413e" : wd===6 ? "#3b5b92" : "#33312d";
+  c.font="600 64px "+NUMSERIF;
+  c.fillText((d.getMonth()+1)+"/"+d.getDate(), x+w/2, y+86);
+  c.font="400 34px "+MINCHO;
+  c.fillText("（"+WD[wd]+"）", x+w/2, y+134);
+
+  if(day.mode==="closed"){
+    /* 斜線の× */
+    c.strokeStyle="#6b665c"; c.lineWidth=5;
+    c.beginPath();
+    c.moveTo(x+60,y+190); c.lineTo(x+w-60,y+h-70);
+    c.moveTo(x+w-60,y+190); c.lineTo(x+60,y+h-70);
+    c.stroke();
+    c.font="400 40px "+MINCHO; c.fillStyle="#6b665c";
+    c.fillText("お休み", x+w/2, y+h-24);
+    c.textAlign="left";
+    return;
+  }
+
+  /* バー描画 */
+  const barW=w-56, barH=150, bx=x+28;
+  if(day.mode==="both"){
+    drawBar(c,bx,y+176,barW,barH,"l",day.lunch);
+    drawBar(c,bx,y+176+barH+34,barW,barH,"d",day.dinner);
+  }else{
+    drawBar(c,bx,y+256,barW,barH,"d",day.dinner);
+  }
+  c.textAlign="left";
+}
+
+function drawBar(c,x,y,w,h,kind,pax){
+  const s=statusOf(kind,pax);
+  let fill, txcol;
+  if(s==="full"){ fill="#b7b2a7"; txcol="#ffffff"; }
+  else if(kind==="l"){ fill="#f2c94c"; txcol="#5d4a0e"; }
+  else{ fill="#2d4f9e"; txcol="#ffffff"; }
+  roundRect(c,x,y,w,h,14); c.fillStyle=fill; c.fill();
+
+  c.textAlign="center"; c.fillStyle=txcol;
+  const label = kind==="l" ? "昼" : "夜";
+  c.font="600 44px "+MINCHO;
+  c.fillText(label, x+52, y+h/2+16);
+  if(s==="full"){
+    c.font="700 62px "+MINCHO;
+    c.fillText("満席", x+w/2+28, y+h/2+22);
+  }else{
+    c.font="700 88px "+NUMSERIF;
+    c.fillText(s==="ok"?"○":"△", x+w/2+28, y+h/2+32);
+  }
+}
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+
+/* ================= ④公開ページに反映（＝クラウド保存） ================= */
+function sendToLine(){
+  const msg=document.getElementById("sendMsg");
+  if(!state.gasUrl){ msg.className="msg ng"; msg.textContent="⑤設定のGASのURLが空です。先に設定してください。"; return; }
+  fetch(state.gasUrl,{ method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"save", data:state}) })
+  .then(()=>{ msg.className="msg ok";
+    msg.textContent="保存しました。お客さまがLINEの「空き状況を見る」を開くと、この内容が表示されます。"; })
+  .catch(e=>{ msg.className="msg ng"; msg.textContent="保存に失敗しました："+e.message; });
+}
+function downloadPng(){
+  renderImage();
+  const a=document.createElement("a");
+  a.href=document.getElementById("cv").toDataURL("image/png");
+  a.download="richmenu_"+state.startDate+".png";
+  a.click();
+}
+
+/* ================= ⑤クラウド保存/読込（手動のみ） ================= */
+function cloudSave(){
+  const msg=document.getElementById("cloudMsg");
+  if(!state.gasUrl){ msg.className="msg ng"; msg.textContent="GASのURLが空です。"; return; }
+  fetch(state.gasUrl,{ method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify({action:"save", data:state}) })
+  .then(()=>{ msg.className="msg ok"; msg.textContent="クラウドに保存しました。"; })
+  .catch(e=>{ msg.className="msg ng"; msg.textContent="保存に失敗しました："+e.message; });
+}
+function cloudLoad(){
+  const msg=document.getElementById("cloudMsg");
+  if(!state.gasUrl){ msg.className="msg ng"; msg.textContent="GASのURLが空です。"; return; }
+  if(!confirm("クラウドのデータで、今の画面の内容を上書きします。よろしいですか？")) return;
+  fetch(state.gasUrl+"?action=load")
+  .then(r=>r.json())
+  .then(j=>{
+    if(!j || !j.data){ throw new Error("保存データがありません"); }
+    const keepGas=state.gasUrl;
+    Object.assign(state, j.data);
+    state.gasUrl=keepGas;           // GAS URLは画面側の値を維持
+    localSave(); initInputs(); renderGrid(); renderImage();
+    msg.className="msg ok"; msg.textContent="クラウドから読み込みました。";
+  })
+  .catch(e=>{ msg.className="msg ng"; msg.textContent="読込に失敗しました："+e.message; });
+}
+
+/* ================= 初期化 ================= */
+function initInputs(){
+  document.getElementById("startDate").value=state.startDate;
+  document.getElementById("gasUrl").value=state.gasUrl||"";
+  document.getElementById("reserveUrl").value=state.reserveUrl||"";
+  ["lOk","lFew","dOk","dFew"].forEach(k=>document.getElementById(k).value=state[k]);
+}
+function bind(){
+  document.getElementById("startDate").onchange=e=>{ state.startDate=e.target.value; localSave(); renderGrid(); };
+  document.getElementById("btnToday").onclick=()=>{ state.startDate=todayYmd(); initInputs(); localSave(); renderGrid(); };
+  document.getElementById("btnNextMon").onclick=()=>{
+    const d=new Date(); const add=((8-d.getDay())%7)||7; d.setDate(d.getDate()+add);
+    state.startDate=ymd(d); initInputs(); localSave(); renderGrid();
+  };
+  document.getElementById("btnImport").onclick=importBulk;
+  document.getElementById("btnRender").onclick=renderImage;
+  document.getElementById("btnSend").onclick=sendToLine;
+  document.getElementById("btnDownload").onclick=downloadPng;
+  document.getElementById("btnCloudSave").onclick=cloudSave;
+  document.getElementById("btnCloudLoad").onclick=cloudLoad;
+  ["gasUrl","reserveUrl"].forEach(k=>{
+    document.getElementById(k).onchange=e=>{ state[k]=e.target.value.trim(); localSave(); };
+  });
+  ["lOk","lFew","dOk","dFew"].forEach(k=>{
+    document.getElementById(k).onchange=e=>{ state[k]=Math.max(0,Number(e.target.value)||0); localSave(); renderGrid(); };
+  });
+}
+
+localLoad();
+if(!state.startDate) state.startDate=todayYmd();
+initInputs(); bind(); renderGrid(); renderImage();
+</script>
+</body>
+</html>
