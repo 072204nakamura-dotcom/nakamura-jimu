@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なかむら事務ツール</title>
+<style>
+  :root{
+    --ivory:#F7F3E9;
+    --brown:#3E2E20;
+    --brown-soft:#6B5744;
+    --green:#1F4A38;
+    --green-light:#2E6B50;
+    --gold:#B08D46;
+    --card:#FFFDF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","BIZ UDMincho",serif;
+    background:var(--ivory);
+    color:var(--brown);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{
+    text-align:center;
+    padding:30px 20px 26px;
+    border:1px solid var(--gold);
+    position:relative;
+    background:var(--card);
+    margin-bottom:30px;
+  }
+  header::before,header::after,
+  header .cb::before,header .cb::after{
+    content:"";position:absolute;width:22px;height:22px;
+    border-color:var(--green);border-style:solid;
+  }
+  header::before{top:6px;left:6px;border-width:2px 0 0 2px;}
+  header::after{top:6px;right:6px;border-width:2px 2px 0 0;}
+  header .cb::before{bottom:6px;left:6px;border-width:0 0 2px 2px;}
+  header .cb::after{bottom:6px;right:6px;border-width:0 2px 2px 0;}
+  header .eyebrow{
+    font-size:11px;letter-spacing:.35em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:8px;
+    font-family:Georgia,serif;
+  }
+  header h1{font-size:22px;font-weight:600;letter-spacing:.15em;}
+  header p{font-size:12px;color:var(--brown-soft);margin-top:8px;letter-spacing:.1em;}
+
+  .tool{
+    display:block;
+    background:var(--card);
+    border:1px solid #E3DAC6;
+    border-left:4px solid var(--green);
+    padding:20px 22px;
+    margin-bottom:16px;
+    text-decoration:none;
+    color:var(--brown);
+    transition:background .2s, border-left-color .2s;
+  }
+  .tool:hover{background:#FCF8EE;border-left-color:var(--gold);}
+  .tool .t-name{
+    font-size:16.5px;font-weight:600;letter-spacing:.1em;
+    color:var(--green);
+    display:flex;align-items:center;gap:10px;
+  }
+  .tool .t-name::after{
+    content:"→";margin-left:auto;color:var(--gold);
+    font-family:Georgia,serif;
+  }
+  .tool .t-desc{
+    font-size:12.5px;color:var(--brown-soft);
+    margin-top:8px;line-height:1.8;letter-spacing:.03em;
+  }
+  .coming{
+    border-left-color:#CFC6B0;
+    opacity:.55;
+    pointer-events:none;
+  }
+  .coming .t-name{color:var(--brown-soft);}
+  .coming .t-name::after{content:"準備中";font-size:11px;font-family:inherit;letter-spacing:.1em;}
+  footer{
+    text-align:center;font-size:11px;color:var(--brown-soft);
+    letter-spacing:.25em;margin-top:40px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="cb"></span>
+    <div class="eyebrow">Nakamura — Office Tools</div>
+    <h1>なかむら事務ツール</h1>
+    <p>洋食だいにんぐなかむら ／ Café照</p>
+  </header>
+
+  <a class="tool" href="lottery.html">
+    <div class="t-name">キャンペーン抽選ツール</div>
+    <div class="t-desc">Instagramキャンペーンの当選者を口数制（コメント・リポストで確率アップ）で公平に抽選します。応募者名を貼り付けてボタンを押すだけ。</div>
+  </a>
+
+  <!-- 新しいツールを追加するときは、上の <a class="tool"> ブロックをコピーして
+       href をファイル名（例：genka.html）に、名前と説明を書き換えてください -->
+
+  <div class="tool coming">
+    <div class="t-name">（次のツール）</div>
+    <div class="t-desc">新しい事務ツールができたら、ここに追加されます。</div>
+  </div>
+
+  <footer>NAKAMURA JIMU TOOLS</footer>
+</div>
+</body>
+</html>

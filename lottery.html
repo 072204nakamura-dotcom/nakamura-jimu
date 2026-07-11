@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café照 キャンペーン抽選ツール</title>
+<style>
+  :root{
+    --ivory:#F7F3E9;
+    --ivory-deep:#EFE8D8;
+    --brown:#3E2E20;
+    --brown-soft:#6B5744;
+    --green:#1F4A38;
+    --green-light:#2E6B50;
+    --gold:#B08D46;
+    --card:#FFFDF7;
+    --danger:#9C3A2E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","BIZ UDMincho",serif;
+    background:var(--ivory);
+    color:var(--brown);
+    min-height:100vh;
+    padding:24px 16px 64px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+
+  /* ヘッダー */
+  header{
+    text-align:center;
+    padding:28px 20px 24px;
+    border:1px solid var(--gold);
+    position:relative;
+    background:var(--card);
+    margin-bottom:28px;
+  }
+  header::before,header::after,
+  .corner-b::before,.corner-b::after{
+    content:"";
+    position:absolute;
+    width:22px;height:22px;
+    border-color:var(--green);
+    border-style:solid;
+  }
+  header::before{top:6px;left:6px;border-width:2px 0 0 2px;}
+  header::after{top:6px;right:6px;border-width:2px 2px 0 0;}
+  .corner-b::before{bottom:6px;left:6px;border-width:0 0 2px 2px;}
+  .corner-b::after{bottom:6px;right:6px;border-width:0 2px 2px 0;}
+  header .eyebrow{
+    font-size:11px;letter-spacing:.35em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:8px;
+    font-family:Georgia,serif;
+  }
+  header h1{font-size:22px;font-weight:600;letter-spacing:.12em;}
+  header p{font-size:12.5px;color:var(--brown-soft);margin-top:8px;letter-spacing:.08em;}
+
+  /* セクション共通 */
+  section{
+    background:var(--card);
+    border:1px solid #E3DAC6;
+    padding:22px 20px;
+    margin-bottom:22px;
+  }
+  h2{
+    font-size:15px;font-weight:600;letter-spacing:.15em;
+    color:var(--green);
+    padding-bottom:10px;margin-bottom:16px;
+    border-bottom:1px solid var(--ivory-deep);
+    display:flex;align-items:center;gap:10px;
+  }
+  h2 .step{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    border:1.5px solid var(--green);
+    font-size:13px;font-family:Georgia,serif;
+    flex-shrink:0;
+  }
+  .hint{font-size:12px;color:var(--brown-soft);line-height:1.8;margin-bottom:12px;}
+
+  textarea{
+    width:100%;min-height:130px;
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:14px;line-height:1.9;
+    padding:12px;
+    border:1px solid #D8CCB2;
+    background:#FFFFFF;
+    color:var(--brown);
+    resize:vertical;
+  }
+  textarea:focus{outline:2px solid var(--green-light);outline-offset:1px;}
+
+  .btn{
+    font-family:inherit;
+    font-size:14px;letter-spacing:.15em;
+    padding:12px 26px;
+    border:1px solid var(--green);
+    background:var(--green);
+    color:#FFFDF7;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .btn:hover{background:var(--green-light);}
+  .btn.ghost{background:transparent;color:var(--green);}
+  .btn.ghost:hover{background:var(--ivory-deep);}
+  .btn.small{font-size:12px;padding:7px 14px;letter-spacing:.1em;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+
+  /* 応募者テーブル */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;font-weight:600;font-size:12px;
+    letter-spacing:.1em;color:var(--brown-soft);
+    padding:8px 6px;border-bottom:1.5px solid var(--green);
+    white-space:nowrap;
+  }
+  td{padding:9px 6px;border-bottom:1px solid var(--ivory-deep);vertical-align:middle;}
+  td.name{font-family:"Hiragino Sans","Yu Gothic",sans-serif;word-break:break-all;}
+  .chk{width:19px;height:19px;accent-color:var(--green);cursor:pointer;display:block;margin:0 auto;}
+  .tickets{
+    font-family:Georgia,serif;font-size:15px;
+    color:var(--green);text-align:center;font-weight:600;
+  }
+  .center{text-align:center;}
+  .excl-row td{opacity:.38;text-decoration:line-through;}
+  .excl-row td.excl-cell{text-decoration:none;opacity:1;}
+  .dup{color:var(--danger);font-size:11px;letter-spacing:.05em;}
+  .summary{
+    display:flex;gap:22px;flex-wrap:wrap;
+    margin-top:16px;padding-top:14px;
+    border-top:1px solid var(--ivory-deep);
+    font-size:13px;color:var(--brown-soft);
+  }
+  .summary b{color:var(--green);font-size:17px;font-family:Georgia,serif;margin-left:4px;}
+
+  /* 抽選設定 */
+  .settings{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;}
+  .field label{display:block;font-size:12px;color:var(--brown-soft);margin-bottom:6px;letter-spacing:.08em;}
+  .field input[type=number]{
+    width:90px;font-size:16px;padding:9px 10px;
+    border:1px solid #D8CCB2;background:#fff;color:var(--brown);
+    font-family:Georgia,serif;text-align:center;
+  }
+  .field input:focus{outline:2px solid var(--green-light);outline-offset:1px;}
+
+  /* 抽選演出 */
+  #drawStage{
+    display:none;
+    text-align:center;
+    padding:34px 10px;
+    background:var(--green);
+    color:var(--ivory);
+    margin-top:18px;
+  }
+  #drawStage .rolling{
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:26px;font-weight:600;letter-spacing:.05em;
+    min-height:40px;
+  }
+  #drawStage .label{font-size:12px;letter-spacing:.3em;margin-bottom:12px;color:#CBBE9B;}
+
+  /* 結果 */
+  #resultSec{display:none;}
+  .winner-list{list-style:none;margin-top:4px;}
+  .winner-list li{
+    display:flex;align-items:center;gap:14px;
+    padding:13px 10px;
+    border-bottom:1px solid var(--ivory-deep);
+    opacity:0;transform:translateY(8px);
+    animation:pop .5s forwards;
+  }
+  @keyframes pop{to{opacity:1;transform:none;}}
+  .winner-list .no{
+    font-family:Georgia,serif;font-size:14px;color:var(--gold);
+    width:52px;flex-shrink:0;letter-spacing:.05em;
+  }
+  .winner-list .wname{
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:16px;font-weight:600;word-break:break-all;
+  }
+  .winner-list .wt{font-size:11.5px;color:var(--brown-soft);margin-left:auto;white-space:nowrap;}
+  .sub-h{
+    font-size:12.5px;letter-spacing:.2em;color:var(--gold);
+    margin:22px 0 4px;padding-bottom:6px;
+    border-bottom:1px dotted var(--gold);
+  }
+  .note-box{
+    margin-top:18px;padding:12px 14px;
+    background:var(--ivory);
+    border-left:3px solid var(--gold);
+    font-size:12px;line-height:1.9;color:var(--brown-soft);
+  }
+  footer{
+    text-align:center;font-size:11px;color:var(--brown-soft);
+    letter-spacing:.2em;margin-top:34px;
+  }
+  @media (max-width:560px){
+    section{padding:16px 12px;}
+    th,td{padding:8px 4px;}
+    .winner-list .wt{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .winner-list li{animation:none;opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="corner-b">
+    <div class="eyebrow">Café Terrasse — Campaign Lottery</div>
+    <h1>キャンペーン抽選ツール</h1>
+    <p>口数制対応：フォロー＆いいね＝1口 ／ コメント＋1口 ／ リポスト＋1口（最大3口）</p>
+  </header>
+
+  <!-- STEP 1 -->
+  <section>
+    <h2><span class="step">1</span>応募者の名前を貼り付ける</h2>
+    <p class="hint">
+      Instagramのアカウント名を<strong>1行に1人ずつ</strong>入力してください（@はあってもなくてもOK）。<br>
+      入力できたら「リストを作成」を押します。
+    </p>
+    <textarea id="inputNames" placeholder="例：
+@hiroshima_taro
+kumano_hanako
+@cafe_lover_123"></textarea>
+    <div class="btn-row">
+      <button class="btn" onclick="buildList()">リストを作成</button>
+      <button class="btn ghost" onclick="clearAll()">すべてリセット</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="listSec" style="display:none;">
+    <h2><span class="step">2</span>ボーナス口数にチェックを入れる</h2>
+    <p class="hint">
+      コメントしてくれた人・リポスト（メンション付き）してくれた人にチェックを入れると、口数が自動で増えます。<br>
+      プレ垢などを抽選から外す場合は「除外」にチェックしてください。
+    </p>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px;">No.</th>
+            <th>アカウント名</th>
+            <th class="center" style="width:72px;">コメント<br>＋1口</th>
+            <th class="center" style="width:72px;">リポスト<br>＋1口</th>
+            <th class="center" style="width:52px;">口数</th>
+            <th class="center" style="width:52px;">除外</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="summary">
+      <span>応募者<b id="sumPeople">0</b>人</span>
+      <span>抽選対象<b id="sumActive">0</b>人</span>
+      <span>くじの総数<b id="sumTickets">0</b>口</span>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section id="drawSec" style="display:none;">
+    <h2><span class="step">3</span>抽選する</h2>
+    <div class="settings">
+      <div class="field">
+        <label>当選者数</label>
+        <input type="number" id="numWinners" value="10" min="1">
+      </div>
+      <div class="field">
+        <label>補欠（繰り上げ用）</label>
+        <input type="number" id="numBackup" value="3" min="0">
+      </div>
+      <button class="btn" id="drawBtn" onclick="startDraw()">抽選スタート</button>
+    </div>
+    <div id="drawStage">
+      <div class="label">DRAWING</div>
+      <div class="rolling" id="rollingName">…</div>
+    </div>
+  </section>
+
+  <!-- 結果 -->
+  <section id="resultSec">
+    <h2><span class="step">✦</span>抽選結果</h2>
+    <div class="sub-h">当選者</div>
+    <ol class="winner-list" id="winnerList"></ol>
+    <div id="backupWrap">
+      <div class="sub-h">補欠（当選者と連絡が取れない場合に繰り上げ）</div>
+      <ol class="winner-list" id="backupList"></ol>
+    </div>
+    <div class="btn-row">
+      <button class="btn small ghost" onclick="copyResult()">結果をコピー</button>
+      <button class="btn small ghost" onclick="startDraw()">やり直す（再抽選）</button>
+    </div>
+    <div class="note-box">
+      抽選は口数に応じた重み付きのランダム抽選です（同じ人が2回当選することはありません）。<br>
+      結果はコピーして、当選DMの送付リストとしてお使いください。記録のためスクリーンショットも残しておくと安心です。
+    </div>
+  </section>
+
+  <footer>CAFÉ TERRASSE ・ INSTAGRAM CAMPAIGN</footer>
+</div>
+
+<script>
+let entries = []; // {name, comment, repost, excluded}
+
+function normalize(raw){
+  let n = raw.trim();
+  if(!n) return "";
+  n = n.replace(/^@+/, "");      // 先頭の@を除去
+  return n;
+}
+
+function buildList(){
+  const lines = document.getElementById("inputNames").value.split("\n");
+  const seen = new Set();
+  entries = [];
+  const dups = [];
+  for(const line of lines){
+    const name = normalize(line);
+    if(!name) continue;
+    const key = name.toLowerCase();
+    if(seen.has(key)){ dups.push(name); continue; } // 重複は1件に統合
+    seen.add(key);
+    entries.push({name, comment:false, repost:false, excluded:false});
+  }
+  if(entries.length === 0){
+    alert("アカウント名が読み取れませんでした。1行に1人ずつ入力してください。");
+    return;
+  }
+  if(dups.length > 0){
+    alert("重複していた名前を1件にまとめました：\n" + dups.join(", "));
+  }
+  renderTable();
+  document.getElementById("listSec").style.display = "block";
+  document.getElementById("drawSec").style.display = "block";
+  document.getElementById("resultSec").style.display = "none";
+  document.getElementById("listSec").scrollIntoView({behavior:"smooth"});
+}
+
+function renderTable(){
+  const tb = document.getElementById("tbody");
+  tb.innerHTML = "";
+  entries.forEach((e, i) => {
+    const tr = document.createElement("tr");
+    if(e.excluded) tr.className = "excl-row";
+    tr.innerHTML = `
+      <td class="center" style="font-family:Georgia,serif;color:var(--brown-soft);">${i+1}</td>
+      <td class="name">@${e.name}</td>
+      <td class="excl-cell"><input type="checkbox" class="chk" ${e.comment?"checked":""} ${e.excluded?"disabled":""} onchange="toggle(${i},'comment',this.checked)"></td>
+      <td class="excl-cell"><input type="checkbox" class="chk" ${e.repost?"checked":""} ${e.excluded?"disabled":""} onchange="toggle(${i},'repost',this.checked)"></td>
+      <td class="tickets">${e.excluded ? "—" : ticketCount(e)}</td>
+      <td class="excl-cell"><input type="checkbox" class="chk" ${e.excluded?"checked":""} onchange="toggle(${i},'excluded',this.checked)"></td>
+    `;
+    tb.appendChild(tr);
+  });
+  updateSummary();
+}
+
+function ticketCount(e){
+  return 1 + (e.comment?1:0) + (e.repost?1:0);
+}
+
+function toggle(i, key, val){
+  entries[i][key] = val;
+  renderTable();
+}
+
+function updateSummary(){
+  const active = entries.filter(e => !e.excluded);
+  document.getElementById("sumPeople").textContent = entries.length;
+  document.getElementById("sumActive").textContent = active.length;
+  document.getElementById("sumTickets").textContent =
+    active.reduce((s,e)=> s + ticketCount(e), 0);
+}
+
+/* ---- 抽選 ---- */
+let rollTimer = null;
+
+function weightedDraw(pool, count){
+  // pool: [{name, tickets}] → 重み付きで count 人を重複なしで選ぶ
+  const result = [];
+  const p = pool.map(x => ({...x}));
+  while(result.length < count && p.length > 0){
+    const total = p.reduce((s,x)=> s + x.tickets, 0);
+    let r = randFloat() * total;
+    let idx = 0;
+    for(let i=0; i<p.length; i++){
+      r -= p[i].tickets;
+      if(r <= 0){ idx = i; break; }
+    }
+    result.push(p[idx]);
+    p.splice(idx, 1);
+  }
+  return result;
+}
+
+function randFloat(){
+  // 暗号学的に強い乱数（公平性のため）
+  const a = new Uint32Array(1);
+  crypto.getRandomValues(a);
+  return a[0] / 4294967296;
+}
+
+function startDraw(){
+  const active = entries.filter(e => !e.excluded)
+                        .map(e => ({name:e.name, tickets:ticketCount(e)}));
+  if(active.length === 0){
+    alert("抽選対象がいません。リストを作成してください。");
+    return;
+  }
+  const nw = Math.max(1, parseInt(document.getElementById("numWinners").value) || 1);
+  const nb = Math.max(0, parseInt(document.getElementById("numBackup").value) || 0);
+  if(nw > active.length){
+    alert("当選者数（" + nw + "人）が抽選対象（" + active.length + "人）より多いです。当選者数を減らしてください。");
+    return;
+  }
+
+  const picked = weightedDraw(active, Math.min(nw + nb, active.length));
+  const winners = picked.slice(0, nw);
+  const backups = picked.slice(nw);
+
+  // ルーレット演出
+  const stage = document.getElementById("drawStage");
+  const roll = document.getElementById("rollingName");
+  const btn = document.getElementById("drawBtn");
+  stage.style.display = "block";
+  btn.disabled = true;
+  document.getElementById("resultSec").style.display = "none";
+  let t = 0;
+  clearInterval(rollTimer);
+  rollTimer = setInterval(()=>{
+    roll.textContent = "@" + active[Math.floor(randFloat()*active.length)].name;
+    t += 1;
+    if(t > 24){
+      clearInterval(rollTimer);
+      stage.style.display = "none";
+      btn.disabled = false;
+      showResult(winners, backups);
+    }
+  }, 90);
+}
+
+function showResult(winners, backups){
+  const wl = document.getElementById("winnerList");
+  const bl = document.getElementById("backupList");
+  wl.innerHTML = "";
+  bl.innerHTML = "";
+  winners.forEach((w,i)=>{
+    const li = document.createElement("li");
+    li.style.animationDelay = (i*0.35) + "s";
+    li.innerHTML = `<span class="no">No.${String(i+1).padStart(2,"0")}</span>
+                    <span class="wname">@${w.name}</span>
+                    <span class="wt">${w.tickets}口で応募</span>`;
+    wl.appendChild(li);
+  });
+  backups.forEach((w,i)=>{
+    const li = document.createElement("li");
+    li.style.animationDelay = ((winners.length + i)*0.35) + "s";
+    li.innerHTML = `<span class="no">補欠${i+1}</span>
+                    <span class="wname">@${w.name}</span>
+                    <span class="wt">${w.tickets}口で応募</span>`;
+    bl.appendChild(li);
+  });
+  document.getElementById("backupWrap").style.display = backups.length ? "block" : "none";
+  document.getElementById("resultSec").style.display = "block";
+  document.getElementById("resultSec").scrollIntoView({behavior:"smooth"});
+  window._lastResult = {winners, backups};
+}
+
+function copyResult(){
+  if(!window._lastResult) return;
+  const {winners, backups} = window._lastResult;
+  const today = new Date();
+  const d = today.getFullYear() + "/" + (today.getMonth()+1) + "/" + today.getDate();
+  let text = "【Café照 キャンペーン抽選結果】" + d + "\n\n■当選者\n";
+  winners.forEach((w,i)=> text += (i+1) + ". @" + w.name + "\n");
+  if(backups.length){
+    text += "\n■補欠\n";
+    backups.forEach((w,i)=> text += (i+1) + ". @" + w.name + "\n");
+  }
+  navigator.clipboard.writeText(text).then(
+    ()=> alert("結果をコピーしました。メモアプリなどに貼り付けて保存してください。"),
+    ()=> alert("コピーできませんでした。スクリーンショットで保存してください。")
+  );
+}
+
+function clearAll(){
+  if(entries.length > 0 && !confirm("入力内容とリストをすべて消します。よろしいですか？")) return;
+  entries = [];
+  document.getElementById("inputNames").value = "";
+  document.getElementById("listSec").style.display = "none";
+  document.getElementById("drawSec").style.display = "none";
+  document.getElementById("resultSec").style.display = "none";
+}
+</script>
+</body>
+</html>
