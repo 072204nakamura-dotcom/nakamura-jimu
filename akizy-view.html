@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空き状況｜洋食だいにんぐなかむら</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Noto Serif JP',serif;
+    background:
+      linear-gradient(rgba(228,226,222,0.92), rgba(214,212,208,0.94)),
+      repeating-linear-gradient(45deg,#d8d6d2 0px,#d8d6d2 2px,#d2d0cc 2px,#d2d0cc 4px);
+    color:#2b2b2b; padding:20px 14px; min-height:100vh;
+  }
+  .wrap { max-width:560px; margin:0 auto; }
+
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:16px; }
+  .big-month { font-size:52px; font-weight:700; line-height:0.8; }
+  .range-en { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:#555; }
+  .range-jp { font-size:15px; font-weight:700; margin-top:2px; }
+  .shop-name { text-align:right; font-size:13px; font-weight:500; color:#3a3a3a; }
+  .shop-name small { display:block; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:10px; color:#777; margin-top:2px; }
+
+  .legend {
+    background:rgba(255,255,255,0.85); border-radius:10px; padding:10px 12px;
+    margin-bottom:16px; font-size:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .legend-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:5px; }
+  .legend-row:last-child { margin-bottom:0; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-weight:500; }
+  .swatch { width:16px; height:16px; border-radius:4px; }
+  .swatch.lunch { background:#E8B84B; }
+  .swatch.dinner { background:#1B4FA0; }
+
+  .week-label {
+    font-size:14px; font-weight:700; color:#444; margin:12px 0 6px 2px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .week-label::before { content:''; width:4px; height:16px; background:#1B4FA0; border-radius:2px; }
+
+  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .dow-head { text-align:center; font-size:12px; font-weight:700; padding:3px 0; }
+  .dow-head.sun { color:#c0392b; }
+  .dow-head.sat { color:#1f6dc0; }
+
+  .cell {
+    background:rgba(255,255,255,0.7); border-radius:7px; overflow:hidden;
+    min-height:96px; box-shadow:0 1px 3px rgba(0,0,0,0.05);
+  }
+  .cell.empty { background:rgba(255,255,255,0.25); }
+  .cell-date { font-size:12px; font-weight:700; padding:3px 5px 1px; }
+  .cell-date.sun { color:#c0392b; }
+  .cell-date.sat { color:#1f6dc0; }
+  .empty .cell-date { color:#b5b3af; font-weight:400; }
+
+  .slots { display:flex; flex-direction:column; padding:1px 4px 4px; gap:3px; }
+  .slot {
+    border-radius:5px; height:32px;
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .slot-lunch { background:#E8B84B; }
+  .slot-dinner { background:#1B4FA0; }
+  .slot-closed { background:#D9D9D9; }
+  .slot-lbl { position:absolute; left:4px; font-size:9px; font-weight:700; color:rgba(255,255,255,0.9); }
+  .slot-closed .slot-lbl { color:#888; }
+  .slot-mk { font-size:20px; font-weight:700; color:#fff; }
+  .slot-closed .slot-mk { font-size:15px; color:#777; }
+  .empty-slot { height:32px; border-radius:5px; background:rgba(220,218,214,0.4);
+    display:flex; align-items:center; justify-content:center; color:#c2c0bc; font-size:12px; }
+
+  .reserve-btn {
+    display:block; text-align:center; text-decoration:none;
+    background:linear-gradient(135deg,#6b2737,#9a3f54); color:#fde8ec;
+    padding:16px; border-radius:12px; font-size:16px; font-weight:500;
+    margin:20px 0 10px; letter-spacing:0.05em;
+  }
+  .notes { font-size:12px; color:#555; line-height:1.8; margin-top:12px; }
+  .loading { text-align:center; padding:40px; color:#888; font-size:14px; }
+  .updated { text-align:right; font-size:11px; color:#999; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+      <span class="big-month" id="bigMonth">7</span>
+      <div>
+        <div class="range-en" id="rangeEn">July 2026</div>
+        <div class="range-jp" id="rangeJp">空き状況</div>
+      </div>
+    </div>
+    <div class="shop-name">洋食だいにんぐ なかむら<small>Availability Calendar</small></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-row">
+      <span class="legend-item"><span class="swatch lunch"></span>ランチ（昼）</span>
+      <span class="legend-item"><span class="swatch dinner"></span>ディナー（夜）</span>
+    </div>
+    <div class="legend-row">○ 空席あり ／ △ 残りわずか ／ ✕ 満席 ／ 休 = お休み</div>
+  </div>
+
+  <div id="calendar"><div class="loading">読み込み中です…</div></div>
+
+  <a href="#" id="reserveBtn" class="reserve-btn">📅 ご予約はこちら</a>
+
+  <div class="notes">
+    <p>※空席状況は変動します。最新はご予約ページでご確認ください。</p>
+    <p>※月曜定休／ランチは水・木ほか不定期営業です。</p>
+  </div>
+  <div class="updated" id="updated"></div>
+</div>
+
+<script>
+/* ===== GASのURL（管理画面と同じデプロイURLを貼る） ===== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycby2EL8vYJiaSI0IDYI_-zHtV10PHYvglyRg6XvoRvFtYLg17_mjpsQbCp1DD2fzu20dEQ/exec';
+
+var DOW = ['日','月','火','水','木','金','土'];
+var MONTH_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function toISO(d){
+  var y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), dd=('0'+d.getDate()).slice(-2);
+  return y+'-'+m+'-'+dd;
+}
+
+/* ===== スロット1つ分のHTML ===== */
+function slotHtml(slotKey, label, mark){
+  if(mark === '休'){
+    return '<div class="slot slot-closed"><span class="slot-lbl">'+label+'</span><span class="slot-mk">休</span></div>';
+  }
+  var cls = slotKey==='lunch' ? 'slot-lunch' : 'slot-dinner';
+  return '<div class="slot '+cls+'"><span class="slot-lbl">'+label+'</span><span class="slot-mk">'+mark+'</span></div>';
+}
+
+/* ===== カレンダー描画 ===== */
+function render(data){
+  var cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+
+  var start = new Date(data.start + 'T00:00:00');
+  var num = data.numDays || 14;
+
+  // ヘッダーの月表示
+  document.getElementById('bigMonth').textContent = (start.getMonth()+1);
+  document.getElementById('rangeEn').textContent = MONTH_EN[start.getMonth()] + ' ' + start.getFullYear();
+  var endD = new Date(start.getTime()); endD.setDate(start.getDate()+num-1);
+  document.getElementById('rangeJp').textContent = start.getDate()+'日 〜 '+endD.getDate()+'日の空き状況';
+
+  // 週ごとに分割（日曜始まり）
+  var weeks = [];
+  var cur = [];
+  var d = new Date(start.getTime());
+  // 最初の週：開始日の曜日まで空セルを詰める
+  for(var pad=0; pad<d.getDay(); pad++){ cur.push(null); }
+
+  for(var i=0;i<num;i++){
+    var dt = new Date(start.getTime()); dt.setDate(start.getDate()+i);
+    cur.push(dt);
+    if(dt.getDay()===6){ weeks.push(cur); cur=[]; }  // 土曜で週締め
+  }
+  if(cur.length>0){
+    while(cur.length<7) cur.push(null);
+    weeks.push(cur);
+  }
+
+  weeks.forEach(function(week){
+    // 週ラベル（その週の最初と最後の実日付）
+    var real = week.filter(function(x){return x;});
+    if(real.length>0){
+      var lbl = document.createElement('div');
+      lbl.className = 'week-label';
+      var f=real[0], l=real[real.length-1];
+      lbl.textContent = (f.getMonth()+1)+'/'+f.getDate()+'（'+DOW[f.getDay()]+'）〜 '
+                      + (l.getMonth()+1)+'/'+l.getDate()+'（'+DOW[l.getDay()]+'）';
+      cal.appendChild(lbl);
+    }
+
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+    // 曜日見出し
+    for(var w=0;w<7;w++){
+      var h=document.createElement('div');
+      h.className='dow-head'+(w===0?' sun':(w===6?' sat':''));
+      h.textContent=DOW[w];
+      grid.appendChild(h);
+    }
+    // 日付セル
+    week.forEach(function(dt){
+      var cell=document.createElement('div');
+      if(!dt){ cell.className='cell empty'; cell.innerHTML='<div class="cell-date">ー</div>'; grid.appendChild(cell); return; }
+      var iso=toISO(dt);
+      var dd=data.dayData[iso];
+      var dowCls = dt.getDay()===0?'sun':(dt.getDay()===6?'sat':'');
+      cell.className='cell';
+      var html='<div class="cell-date '+dowCls+'">'+dt.getDate()+'</div><div class="slots">';
+      if(dd){
+        html += slotHtml('lunch','昼',dd.lunch);
+        html += slotHtml('dinner','夜',dd.dinner);
+      } else {
+        html += '<div class="empty-slot">ー</div><div class="empty-slot">ー</div>';
+      }
+      html+='</div>';
+      cell.innerHTML=html;
+      grid.appendChild(cell);
+    });
+    cal.appendChild(grid);
+  });
+
+  // 予約ボタン
+  if(data.reserveUrl){
+    document.getElementById('reserveBtn').href = data.reserveUrl;
+  }
+  // 更新日時
+  if(data.updatedAt){
+    var u=new Date(data.updatedAt);
+    document.getElementById('updated').textContent = '最終更新：'+(u.getMonth()+1)+'/'+u.getDate()+' '+('0'+u.getHours()).slice(-2)+':'+('0'+u.getMinutes()).slice(-2);
+  }
+}
+
+/* ===== 読み込み ===== */
+function load(){
+  if(!GAS_URL){
+    document.getElementById('calendar').innerHTML='<div class="loading">設定エラー：GAS_URLが未設定です</div>';
+    return;
+  }
+  fetch(GAS_URL + '?_=' + Date.now())
+    .then(function(r){ return r.text(); })
+    .then(function(t){
+      var data = JSON.parse(t);
+      if(!data || !data.dayData){
+        document.getElementById('calendar').innerHTML='<div class="loading">まだ空き状況が登録されていません</div>';
+        return;
+      }
+      render(data);
+    })
+    .catch(function(){
+      document.getElementById('calendar').innerHTML='<div class="loading">読み込みに失敗しました。時間をおいて再度お試しください。</div>';
+    });
+}
+
+window.addEventListener('DOMContentLoaded', load);
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空き状況カレンダー 管理画面｜洋食だいにんぐなかむら</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Noto Serif JP',serif;
+    background:#efe9df; color:#2b2b2b;
+    padding:16px; max-width:760px; margin:0 auto;
+  }
+  h1 { font-size:20px; margin-bottom:4px; }
+  .sub { font-size:13px; color:#777; margin-bottom:16px; }
+
+  .panel {
+    background:#fff; border-radius:12px; padding:16px;
+    margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .panel h2 { font-size:15px; margin-bottom:10px; color:#5a3e1e; }
+
+  .row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  label { font-size:13px; color:#555; }
+  input[type=date], input[type=text] {
+    font-family:inherit; font-size:15px; padding:8px 10px;
+    border:1px solid #d8ccb8; border-radius:8px; flex:1; min-width:160px;
+  }
+
+  button {
+    font-family:inherit; font-size:14px; font-weight:500;
+    padding:10px 16px; border:none; border-radius:8px;
+    cursor:pointer; background:#c9a44c; color:#fff;
+  }
+  button.gray { background:#8a8377; }
+  button.blue { background:#1B4FA0; }
+  button:active { opacity:0.8; }
+
+  /* 日付リスト */
+  .day-card {
+    border:1px solid #e5ddcc; border-radius:10px;
+    padding:12px; margin-bottom:10px; background:#fdfbf7;
+  }
+  .day-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .day-date { font-size:16px; font-weight:700; }
+  .day-date.sun { color:#c0392b; }
+  .day-date.sat { color:#1f6dc0; }
+  .day-dow { font-size:13px; color:#888; }
+
+  .slot-edit { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .slot-name { width:38px; font-size:13px; font-weight:700; color:#555; }
+  .mark-btns { display:flex; gap:5px; flex-wrap:wrap; }
+  .mark-btn {
+    width:44px; height:40px; border:2px solid #ddd; border-radius:8px;
+    background:#fff; font-size:18px; font-weight:700; cursor:pointer;
+    color:#555; display:flex; align-items:center; justify-content:center;
+  }
+  .slot-lunch .mark-btn.active { background:#E8B84B; color:#fff; border-color:#E8B84B; }
+  .slot-dinner .mark-btn.active { background:#1B4FA0; color:#fff; border-color:#1B4FA0; }
+  .mark-btn.active-closed { background:#D9D9D9; color:#666; border-color:#bbb; }
+
+  .status {
+    padding:10px 14px; border-radius:8px; font-size:14px;
+    margin-bottom:12px; display:none;
+  }
+  .status.ok { background:#e3f3e3; color:#2a6a2a; display:block; }
+  .status.err { background:#f8e0e0; color:#a33; display:block; }
+  .status.wait { background:#fff6e0; color:#96690a; display:block; }
+
+  .hint { font-size:12px; color:#999; margin-top:6px; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<h1>空き状況カレンダー 管理画面</h1>
+<div class="sub">洋食だいにんぐ なかむら ／ ももやん専用</div>
+
+<div id="status" class="status"></div>
+
+<!-- 期間設定 -->
+<div class="panel">
+  <h2>① 期間を決める</h2>
+  <div class="row">
+    <label>開始日</label>
+    <input type="date" id="startDate">
+    <button class="gray" onclick="setToday()">今日から</button>
+  </div>
+  <div class="row">
+    <label>日数</label>
+    <input type="text" id="numDays" value="14" style="max-width:80px;flex:none;">
+    <button onclick="buildDays()">この期間で表を作る</button>
+  </div>
+  <div class="hint">開始日と日数を決めて「表を作る」を押すと、下に各日の編集欄が出ます。<br>月曜は自動で「休」になります（変更も可能）。</div>
+</div>
+
+<!-- 予約ページURL -->
+<div class="panel">
+  <h2>② 予約ページのURL（お客様が「予約する」で開く先）</h2>
+  <div class="row">
+    <input type="text" id="reserveUrl" placeholder="https://autoreserve.com/ja/restaurants/...">
+  </div>
+</div>
+
+<!-- 日別編集 -->
+<div class="panel">
+  <h2>③ 各日の空き状況を設定</h2>
+  <div id="dayList"></div>
+</div>
+
+<!-- 保存 -->
+<div class="panel">
+  <h2>④ 保存する</h2>
+  <div class="row">
+    <button class="blue" onclick="saveToCloud()">💾 クラウドに保存する</button>
+    <button class="gray" onclick="loadFromCloud()">📥 クラウドから読み込む</button>
+  </div>
+  <div class="hint">
+    編集し終わったら必ず「クラウドに保存する」を押してください。<br>
+    保存が成功すると、お客様用ページ（akizy-view.html）に反映されます。
+  </div>
+</div>
+
+<script>
+/* ===== GASのURL（デプロイ後にここへ貼り付け） ===== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycby2EL8vYJiaSI0IDYI_-zHtV10PHYvglyRg6XvoRvFtYLg17_mjpsQbCp1DD2fzu20dEQ/exec';   // 例: https://script.google.com/macros/s/AKfy.../exec
+
+/* ===== 記号 ===== */
+var MARKS = ['○','△','✕','休'];
+
+/* ===== 状態表示 ===== */
+function showStatus(msg, type){
+  var el = document.getElementById('status');
+  el.className = 'status ' + type;
+  el.textContent = msg;
+}
+
+/* ===== 今日の日付をセット ===== */
+function setToday(){
+  var d = new Date();
+  document.getElementById('startDate').value = toISO(d);
+}
+function toISO(d){
+  var y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), dd=('0'+d.getDate()).slice(-2);
+  return y+'-'+m+'-'+dd;
+}
+var DOW = ['日','月','火','水','木','金','土'];
+
+/* ===== データ本体 ===== */
+var dayData = {};   // { '2026-07-17': {lunch:'休', dinner:'△'}, ... }
+
+/* ===== 日別編集欄を作る ===== */
+function buildDays(){
+  var start = document.getElementById('startDate').value;
+  var num = parseInt(document.getElementById('numDays').value,10) || 14;
+  if(!start){ alert('開始日を選んでください'); return; }
+
+  var list = document.getElementById('dayList');
+  list.innerHTML = '';
+  var base = new Date(start + 'T00:00:00');
+
+  for(var i=0;i<num;i++){
+    var d = new Date(base.getTime());
+    d.setDate(base.getDate()+i);
+    var iso = toISO(d);
+    var dow = d.getDay();  // 0=日
+
+    // 既存データがなければ初期値（月曜は休/休）
+    if(!dayData[iso]){
+      if(dow===1){ dayData[iso] = {lunch:'休', dinner:'休'}; }
+      else { dayData[iso] = {lunch:'休', dinner:'○'}; }
+    }
+
+    list.appendChild(makeDayCard(iso, d.getDate(), dow));
+  }
+}
+
+/* ===== 1日分のカード ===== */
+function makeDayCard(iso, dateNum, dow){
+  var card = document.createElement('div');
+  card.className = 'day-card';
+
+  var dowClass = dow===0 ? 'sun' : (dow===6 ? 'sat' : '');
+  var head = document.createElement('div');
+  head.className = 'day-head';
+  head.innerHTML = '<span class="day-date '+dowClass+'">'+dateNum+'日</span>'
+                 + '<span class="day-dow">('+DOW[dow]+')</span>';
+  card.appendChild(head);
+
+  card.appendChild(makeSlotRow(iso,'lunch','昼'));
+  card.appendChild(makeSlotRow(iso,'dinner','夜'));
+  return card;
+}
+
+/* ===== 昼/夜の1行 ===== */
+function makeSlotRow(iso, slotKey, slotLabel){
+  var row = document.createElement('div');
+  row.className = 'slot-edit slot-' + slotKey;
+
+  var name = document.createElement('div');
+  name.className = 'slot-name';
+  name.textContent = slotLabel;
+  row.appendChild(name);
+
+  var btns = document.createElement('div');
+  btns.className = 'mark-btns';
+
+  MARKS.forEach(function(mark){
+    var b = document.createElement('button');
+    b.className = 'mark-btn';
+    b.textContent = mark;
+    if(dayData[iso][slotKey] === mark){
+      b.classList.add('active');
+      if(mark==='休') b.classList.add('active-closed');
+    }
+    b.onclick = function(){
+      dayData[iso][slotKey] = mark;
+      // 同じ行のボタンをリセットして押したものだけactiveに
+      var all = btns.querySelectorAll('.mark-btn');
+      all.forEach(function(x){ x.classList.remove('active','active-closed'); });
+      b.classList.add('active');
+      if(mark==='休') b.classList.add('active-closed');
+    };
+    btns.appendChild(b);
+  });
+
+  row.appendChild(btns);
+  return row;
+}
+
+/* ===== クラウドに保存 ===== */
+function saveToCloud(){
+  if(!GAS_URL){ alert('GAS_URLが未設定です。コード内のGAS_URLにデプロイURLを貼ってください。'); return; }
+  var payload = {
+    start: document.getElementById('startDate').value,
+    numDays: parseInt(document.getElementById('numDays').value,10) || 14,
+    reserveUrl: document.getElementById('reserveUrl').value,
+    dayData: dayData,
+    updatedAt: new Date().toISOString()
+  };
+  var text = JSON.stringify(payload);
+
+  showStatus('保存中です…', 'wait');
+  fetch(GAS_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body:text
+  }).then(function(){
+    // no-corsは結果が読めないので、保存後にGETで検証する
+    return fetch(GAS_URL + '?_=' + Date.now());
+  }).then(function(r){ return r.text(); })
+    .then(function(t){
+      try{
+        var saved = JSON.parse(t);
+        if(saved && saved.dayData){
+          showStatus('✅ 保存できました（'+Object.keys(saved.dayData).length+'日分）', 'ok');
+        } else {
+          showStatus('⚠️ 保存はしましたが検証データが空でした。もう一度お試しください。', 'err');
+        }
+      }catch(e){
+        showStatus('⚠️ 保存後の確認に失敗しました。ネットワークをご確認ください。', 'err');
+      }
+    }).catch(function(){
+      showStatus('❌ 保存に失敗しました。GAS_URLとネットワークをご確認ください。', 'err');
+    });
+}
+
+/* ===== クラウドから読み込み ===== */
+function loadFromCloud(){
+  if(!GAS_URL){ alert('GAS_URLが未設定です。'); return; }
+  showStatus('読み込み中です…', 'wait');
+  fetch(GAS_URL + '?_=' + Date.now())
+    .then(function(r){ return r.text(); })
+    .then(function(t){
+      var data = JSON.parse(t);
+      if(!data || !data.dayData){ showStatus('クラウドにデータがありません。', 'err'); return; }
+      if(!confirm('クラウドのデータを読み込みます。今の編集内容は上書きされます。よろしいですか？')) {
+        showStatus('読み込みを中止しました。', 'wait'); return;
+      }
+      dayData = data.dayData;
+      document.getElementById('startDate').value = data.start || '';
+      document.getElementById('numDays').value = data.numDays || 14;
+      document.getElementById('reserveUrl').value = data.reserveUrl || '';
+      buildDays();
+      showStatus('✅ 読み込みました（'+Object.keys(dayData).length+'日分）', 'ok');
+    }).catch(function(){
+      showStatus('❌ 読み込みに失敗しました。', 'err');
+    });
+}
+
+/* ===== 初期データ（今日Chromeで読み取った7/17〜7/30） ===== */
+window.addEventListener('DOMContentLoaded', function(){
+  dayData = {
+    '2026-07-17': {lunch:'休', dinner:'△'},
+    '2026-07-18': {lunch:'休', dinner:'△'},
+    '2026-07-19': {lunch:'休', dinner:'✕'},
+    '2026-07-20': {lunch:'✕', dinner:'○'},
+    '2026-07-21': {lunch:'休', dinner:'休'},
+    '2026-07-22': {lunch:'○', dinner:'○'},
+    '2026-07-23': {lunch:'○', dinner:'○'},
+    '2026-07-24': {lunch:'休', dinner:'△'},
+    '2026-07-25': {lunch:'休', dinner:'○'},
+    '2026-07-26': {lunch:'休', dinner:'○'},
+    '2026-07-27': {lunch:'休', dinner:'休'},
+    '2026-07-28': {lunch:'休', dinner:'休'},
+    '2026-07-29': {lunch:'○', dinner:'○'},
+    '2026-07-30': {lunch:'○', dinner:'△'}
+  };
+  document.getElementById('startDate').value = '2026-07-17';
+  document.getElementById('numDays').value = 14;
+  document.getElementById('reserveUrl').value = 'https://autoreserve.com/ja/restaurants/8KkG2cHiqSbgbyJMj9jy';
+  buildDays();
+});
+</script>
+</body>
+</html>
