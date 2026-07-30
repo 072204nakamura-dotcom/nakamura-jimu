@@ -79,6 +79,13 @@
   .notes { font-size:12px; color:#555; line-height:1.8; margin-top:12px; }
   .loading { text-align:center; padding:40px; color:#888; font-size:14px; }
   .updated { text-align:right; font-size:11px; color:#999; margin-top:8px; }
+  .updated-banner {
+    text-align:center; background:#6b2737; color:#fde8ec;
+    border-radius:10px; padding:9px 12px; margin-bottom:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.10); line-height:1.35;
+  }
+  .updated-banner .ub-date { font-size:22px; font-weight:700; letter-spacing:0.02em; }
+  .updated-banner .ub-lbl { font-size:12px; font-weight:500; opacity:0.92; }
 </style>
 </head>
 <body>
@@ -92,6 +99,11 @@
       </div>
     </div>
     <div class="shop-name">洋食だいにんぐ なかむら<small>Availability Calendar</small></div>
+  </div>
+
+  <div class="updated-banner" id="updatedBanner" style="display:none;">
+    <div class="ub-date" id="ubDate"></div>
+    <div class="ub-lbl">現在の空き状況です</div>
   </div>
 
   <div class="legend">
@@ -215,7 +227,11 @@ function render(data){
   // 更新日時
   if(data.updatedAt){
     var u=new Date(data.updatedAt);
-    document.getElementById('updated').textContent = '最終更新：'+(u.getMonth()+1)+'/'+u.getDate()+' '+('0'+u.getHours()).slice(-2)+':'+('0'+u.getMinutes()).slice(-2);
+    var dateStr = (u.getMonth()+1)+'月'+u.getDate()+'日';
+    var timeStr = ('0'+u.getHours()).slice(-2)+':'+('0'+u.getMinutes()).slice(-2);
+    document.getElementById('ubDate').textContent = dateStr + ' 更新';
+    document.getElementById('updatedBanner').style.display = 'block';
+    document.getElementById('updated').textContent = '最終更新：'+dateStr+' '+timeStr;
   }
 }
 
