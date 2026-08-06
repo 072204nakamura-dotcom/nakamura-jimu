@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café照 Instagram 月次レポート 2026年7月</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  @page { size: A4; margin: 0; }
+  body {
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    background: #EFEBE2;
+    color: #2B2B28;
+    line-height: 1.8;
+    font-size: 14px;
+  }
+  .print-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 10;
+    background: #8A6D2F; color: #fff; border: none;
+    font-size: 15px; font-weight: 700; padding: 12px 22px;
+    border-radius: 8px; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .page {
+    max-width: 210mm; margin: 0 auto; background: #FFFDF8;
+    padding: 14mm 13mm;
+  }
+  header { border-bottom: 3px solid #8A6D2F; padding-bottom: 12px; margin-bottom: 18px; }
+  .rep-label { font-size: 13px; font-weight: 700; color: #8A6D2F; letter-spacing: .1em; }
+  h1 { font-size: 24px; font-weight: 700; line-height: 1.4; }
+  .meta { font-size: 12px; color: #5A574E; margin-top: 4px; }
+  h2 {
+    font-size: 18px; font-weight: 700; margin: 22px 0 10px;
+    padding-left: 10px; border-left: 5px solid #8A6D2F;
+  }
+  /* サマリーカード */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card {
+    border: 1px solid #D8D2C4; border-radius: 8px; padding: 10px 12px;
+    background: #FFF; break-inside: avoid;
+  }
+  .card .label { font-size: 12px; font-weight: 500; color: #5A574E; }
+  .card .num { font-size: 26px; font-weight: 700; line-height: 1.3; }
+  .card .num small { font-size: 14px; font-weight: 700; }
+  .card .diff { font-size: 12px; font-weight: 700; }
+  .up { color: #2E6B34; }
+  .zero { color: #A93226; }
+  .card.alert { border: 2px solid #A93226; background: #FDF3F1; }
+  /* テーブル */
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: #FFF; }
+  th, td {
+    border: 1px solid #D8D2C4; padding: 7px 8px;
+    font-size: 13px; text-align: right; white-space: nowrap;
+  }
+  th { background: #F3EEE2; font-weight: 700; text-align: center; font-size: 12.5px; }
+  td.l { text-align: left; white-space: normal; min-width: 10em; }
+  td.num { font-weight: 700; }
+  tr.hl td { background: #FBF6E8; }
+  .strong-cell { color: #8A6D2F; font-weight: 700; }
+  /* リスト */
+  .block { break-inside: avoid; }
+  ol.points { margin: 6px 0 0 1.4em; }
+  ol.points li { margin-bottom: 10px; }
+  ol.points b { font-weight: 700; }
+  .good b { color: #2E6B34; }
+  .bad b { color: #A93226; }
+  .note {
+    background: #F3EEE2; border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; margin-top: 6px;
+  }
+  /* KPI表 */
+  .kpi td:first-child { text-align: left; }
+  .st { font-weight: 700; }
+  footer {
+    margin-top: 20px; padding-top: 10px; border-top: 1px solid #D8D2C4;
+    font-size: 11px; color: #5A574E;
+  }
+  @media print {
+    .print-btn { display: none; }
+    body { background: #FFF; }
+    .page { max-width: none; margin: 0; padding: 12mm 13mm; }
+  }
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .page { padding: 16px 12px; }
+  }
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">印刷する</button>
+<div class="page">
+
+<header>
+  <div class="rep-label">INSTAGRAM 月次レポート</div>
+  <h1>Café照（@cafe_terrasse_）2026年7月の実績</h1>
+  <div class="meta">対象期間：2026年7月1日〜7月31日　｜　データ元：Meta Business Suite　｜　作成：2026年8月7日</div>
+</header>
+
+<h2>7月の全体数字（カッコ内は前月比）</h2>
+<div class="cards">
+  <div class="card">
+    <div class="label">リーチ（見た人数）</div>
+    <div class="num">2,630<small>人</small></div>
+    <div class="diff up">▲ +35.4%</div>
+  </div>
+  <div class="card">
+    <div class="label">閲覧数（見られた回数）</div>
+    <div class="num">31,349<small>回</small></div>
+    <div class="diff up">▲ +50.8%</div>
+  </div>
+  <div class="card">
+    <div class="label">反応の合計（いいね・コメント等）</div>
+    <div class="num">336<small>件</small></div>
+    <div class="diff up">▲ +57.0%</div>
+  </div>
+  <div class="card">
+    <div class="label">新しいフォロー</div>
+    <div class="num">45<small>人</small></div>
+    <div class="diff up">▲ +9.8%（フォロワー計 1,447人）</div>
+  </div>
+  <div class="card">
+    <div class="label">プロフィールを見た回数</div>
+    <div class="num">1,690<small>回</small></div>
+    <div class="diff up">▲ +16.6%（1日あたり約55回）</div>
+  </div>
+  <div class="card alert">
+    <div class="label">リンクのクリック</div>
+    <div class="num zero">0<small>回</small></div>
+    <div class="diff zero">31日間ゼロ（最重要の改善点）</div>
+  </div>
+</div>
+
+<h2>投稿ごとの成績（7月・6投稿）</h2>
+<div class="tbl-wrap">
+<table>
+  <tr>
+    <th>公開日</th><th>投稿</th><th>リーチ</th><th>いいね</th><th>コメント</th><th>シェア</th><th>保存</th><th>フォロー</th>
+  </tr>
+  <tr>
+    <td>7/27</td><td class="l">当店のごあんない（カルーセル）</td>
+    <td class="num">825</td><td>38</td><td>0</td><td>0</td><td class="num strong-cell">4</td><td>0</td>
+  </tr>
+  <tr>
+    <td>7/25</td><td class="l">おこさまランチ（カルーセル）</td>
+    <td class="num">653</td><td>30</td><td>0</td><td>0</td><td>1</td><td>1</td>
+  </tr>
+  <tr>
+    <td>7/24</td><td class="l">8月営業日カレンダー</td>
+    <td class="num">441</td><td>8</td><td>0</td><td>0</td><td>0</td><td>0</td>
+  </tr>
+  <tr class="hl">
+    <td>7/19</td><td class="l">🎁 クーポンキャンペーン</td>
+    <td class="num">682</td><td>34</td><td class="num strong-cell">35</td><td class="num strong-cell">4</td><td>1</td><td class="num strong-cell">3</td>
+  </tr>
+  <tr>
+    <td>7/16</td><td class="l">ピザ販売についてのお知らせ</td>
+    <td class="num">813</td><td>21</td><td>0</td><td>0</td><td>0</td><td>0</td>
+  </tr>
+  <tr>
+    <td>7/10</td><td class="l">珈琲か紅茶プレゼント</td>
+    <td class="num">834</td><td>18</td><td>0</td><td>0</td><td>2</td><td>0</td>
+  </tr>
+</table>
+</div>
+<div class="note">
+ストーリーズはほぼ毎日投稿できていて、1本あたり<b>230〜320回</b>見られています（約250人の固定ファンが毎回見てくれている状態）。この習慣は今のまま続けてください。
+</div>
+
+<h2>🟢 7月、ここが良かった（3つ）</h2>
+<div class="block good">
+<ol class="points">
+  <li><b>キャンペーンが大成功。</b>コメント35件・シェア4件・このきっかけでのフォロー3件。7月の反応+57%はほぼこの企画のおかげです。締切後すぐ本文に「締め切りました」を追記した対応も丁寧で良かったです。</li>
+  <li><b>「保存」が動き始めた。</b>月8件（それまでの3ヶ月分が9件）。特に7/27の「当店のごあんない」は保存4件で過去最高。<b>案内をカルーセル1つにまとめると保存してもらえる</b>ことが初めて実証できました。</li>
+  <li><b>投稿ペースが月6本に増え、7/25以降は本文がすっきりした。</b>求人や予約方法を毎回書かない新ルールがもう実行されています。数字にも出ていて、本文を絞った7/27の投稿がリーチ825・保存4と好成績です。</li>
+</ol>
+</div>
+
+<h2>🔴 直したいこと（2つ）</h2>
+<div class="block bad">
+<ol class="points">
+  <li><b>リンクが31日間で1回もクリックされていません。</b>プロフィールは月1,690回も見られているのに、予約やLINEにつながっていない状態です。もったいない No.1。</li>
+  <li><b>キャンペーン以外の投稿はコメント0。</b>「聞けば答えてくれる」ことは証明済みなので、普段の投稿にも軽い問いかけを入れていきましょう。</li>
+</ol>
+</div>
+
+<h2>📌 8月にやること（3つだけ）</h2>
+<div class="block">
+<ol class="points">
+  <li><b>デザート人気投票の結果発表 ＋ 6種一覧の「保存版」投稿。</b>キャンペーンのコメント35件は「どのデザートが人気か」の貴重なデータです。「1位は◯◯でした！」の発表と、6種の名前・価格を1枚にまとめた画像で、保存を狙います。文末は「📌保存して来店の参考に」。</li>
+  <li><b>ストーリーズに週1回、リンクスタンプを貼る。</b>行き先は「オートリザーブ（予約）」か「LINE友だち追加（初回ドリンククーポン）」。まずは月30クリックが目標です。</li>
+  <li><b>リール（短い動画）を1本出してみる。</b>TikTok用に撮った素材の使い回しでOK。パフェにソースをかける瞬間など、15秒で十分です。</li>
+</ol>
+</div>
+<div class="note">
+⚠️ 確認：クーポン当選者10名への<b>DM連絡</b>（締切8/2）はお済みですか？ まだでしたら最優先でお願いします。当選クーポンをレジでどう処理するかも、事前に店内で共有をお願いします。
+</div>
+
+<h2>🎯 目標に対する現在地（10月末まで）</h2>
+<div class="tbl-wrap">
+<table class="kpi">
+  <tr><th>目標（10月末）</th><th>現在</th><th>状況</th></tr>
+  <tr><td>食べ物投稿の保存 8件以上/投稿</td><td>最高 4件</td><td class="st">🟡 前進中</td></tr>
+  <tr><td>リール 月2本</td><td>0本</td><td class="st">🔴 8月に1本目を</td></tr>
+  <tr><td>投稿のリーチ 1,500</td><td>最高 834</td><td class="st">🟡 リールが鍵</td></tr>
+  <tr><td>フォロワー 1,600人</td><td>1,447人</td><td class="st">🟡 あと153人</td></tr>
+  <tr><td>リンククリック 月30回</td><td>0回</td><td class="st">🔴 8月の最重要</td></tr>
+</table>
+</div>
+
+<footer>
+用語メモ：リーチ＝投稿を見た「人数」／閲覧数＝見られた「回数」（同じ人が2回見ると2）／保存＝あとで見返すためのブックマーク。Instagramは保存が多い投稿を「役に立つ投稿」と判断して、より多くの人に届けます。<br>
+Café照 Instagram 月次レポート（2026年7月）｜作成：合同会社輝煌・インスタ運用チーム（分析役）
+</footer>
+
+</div>
+</body>
+</html>
