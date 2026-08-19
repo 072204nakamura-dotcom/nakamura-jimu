@@ -786,10 +786,17 @@ function renderProjects(){
 }
 
 /* --- リンク --- */
+// シフト関連の固定リンク（GAS側の設定に関係なく常に表示）
+const SHIFT_LINKS = { group: "シフト・休み希望", accent: "amber", items: [
+  { name: "統合シフト管理（Cafe照×なかむら）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/" },
+  { name: "🗓 休み希望カレンダー（スタッフ用）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/kibou.html" },
+  { name: "出勤表（従業員閲覧用）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/unified-view.html" }
+]};
 function renderLinks(){
   const grid = document.getElementById("linkGrid");
   grid.innerHTML = "";
-  (CONFIG.links || []).forEach(g => {
+  const _groups = (CONFIG.links || []).filter(g => g.group !== SHIFT_LINKS.group).concat([SHIFT_LINKS]);
+  _groups.forEach(g => {
     const col = document.createElement("div");
     const title = document.createElement("div");
     title.className = "lgroup-title " + (g.accent || "ash");
