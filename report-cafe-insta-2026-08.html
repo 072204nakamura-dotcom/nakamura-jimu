@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café照 Instagram 月次レポート 2026年8月</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  @page { size: A4; margin: 0; }
+  body {
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    background: #EFEBE2;
+    color: #2B2B28;
+    line-height: 1.8;
+    font-size: 14px;
+  }
+  .print-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 10;
+    background: #8A6D2F; color: #fff; border: none;
+    font-size: 15px; font-weight: 700; padding: 12px 22px;
+    border-radius: 8px; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .page {
+    max-width: 210mm; margin: 0 auto; background: #FFFDF8;
+    padding: 14mm 13mm;
+  }
+  header { border-bottom: 3px solid #8A6D2F; padding-bottom: 12px; margin-bottom: 18px; }
+  .rep-label { font-size: 13px; font-weight: 700; color: #8A6D2F; letter-spacing: .1em; }
+  h1 { font-size: 24px; font-weight: 700; line-height: 1.4; }
+  .meta { font-size: 12px; color: #5A574E; margin-top: 4px; }
+  h2 {
+    font-size: 18px; font-weight: 700; margin: 22px 0 10px;
+    padding-left: 10px; border-left: 5px solid #8A6D2F;
+  }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card {
+    border: 1px solid #D8D2C4; border-radius: 8px; padding: 10px 12px;
+    background: #FFF; break-inside: avoid;
+  }
+  .card .label { font-size: 12px; font-weight: 500; color: #5A574E; }
+  .card .num { font-size: 26px; font-weight: 700; line-height: 1.3; }
+  .card .num small { font-size: 14px; font-weight: 700; }
+  .card .diff { font-size: 12px; font-weight: 700; }
+  .up { color: #2E6B34; }
+  .down { color: #A93226; }
+  .zero { color: #A93226; }
+  .card.alert { border: 2px solid #A93226; background: #FDF3F1; }
+  .card.win { border: 2px solid #2E6B34; background: #F2F8F2; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: #FFF; }
+  th, td {
+    border: 1px solid #D8D2C4; padding: 7px 8px;
+    font-size: 13px; text-align: right; white-space: nowrap;
+  }
+  th { background: #F3EEE2; font-weight: 700; text-align: center; font-size: 12.5px; }
+  td.l { text-align: left; white-space: normal; min-width: 10em; }
+  td.num { font-weight: 700; }
+  tr.hl td { background: #F2F8F2; }
+  .strong-cell { color: #8A6D2F; font-weight: 700; }
+  .block { break-inside: avoid; }
+  ol.points { margin: 6px 0 0 1.4em; }
+  ol.points li { margin-bottom: 10px; }
+  ol.points b { font-weight: 700; }
+  .good b { color: #2E6B34; }
+  .bad b { color: #A93226; }
+  .note {
+    background: #F3EEE2; border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; margin-top: 6px;
+  }
+  .kpi td:first-child { text-align: left; }
+  .st { font-weight: 700; }
+  footer {
+    margin-top: 20px; padding-top: 10px; border-top: 1px solid #D8D2C4;
+    font-size: 11px; color: #5A574E;
+  }
+  @media print {
+    .print-btn { display: none; }
+    body { background: #FFF; }
+    .page { max-width: none; margin: 0; padding: 12mm 13mm; }
+  }
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .page { padding: 16px 12px; }
+  }
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">印刷する</button>
+<div class="page">
+
+<header>
+  <div class="rep-label">INSTAGRAM 月次レポート</div>
+  <h1>Café照（@cafe_terrasse_）2026年8月の実績</h1>
+  <div class="meta">対象期間：2026年8月1日〜8月31日　｜　データ元：Meta Business Suite　｜　作成：2026年9月1日</div>
+</header>
+
+<h2>8月の全体数字（カッコ内は前月比）</h2>
+<div class="cards">
+  <div class="card">
+    <div class="label">リーチ（見た人数）</div>
+    <div class="num">2,246<small>人</small></div>
+    <div class="diff down">▼ -14.6%</div>
+  </div>
+  <div class="card">
+    <div class="label">閲覧数（見られた回数）</div>
+    <div class="num">28,526<small>回</small></div>
+    <div class="diff down">▼ -8.7%</div>
+  </div>
+  <div class="card">
+    <div class="label">反応の合計（いいね等）</div>
+    <div class="num">278<small>件</small></div>
+    <div class="diff down">▼ -17.3%</div>
+  </div>
+  <div class="card">
+    <div class="label">新しいフォロー</div>
+    <div class="num">37<small>人</small></div>
+    <div class="diff">フォロワー計 1,474人（+27）</div>
+  </div>
+  <div class="card win">
+    <div class="label">リール投稿</div>
+    <div class="num">2<small>本</small></div>
+    <div class="diff up">🎉 目標「月2本」を初達成！</div>
+  </div>
+  <div class="card alert">
+    <div class="label">リンクのクリック</div>
+    <div class="num zero">0<small>回</small></div>
+    <div class="diff zero">3ヶ月連続ゼロ（9月の最優先）</div>
+  </div>
+</div>
+<div class="note">
+📉 マイナスに見えますが心配いりません。<b>7月はキャンペーンで数字が膨らんだ月</b>です。キャンペーン前の6月（リーチ約1,940）と比べると<b>+16%</b>で、ふだんの実力はむしろ上がっています。
+</div>
+
+<h2>投稿ごとの成績（8月・5投稿）</h2>
+<div class="tbl-wrap">
+<table>
+  <tr>
+    <th>公開日</th><th>投稿</th><th>リーチ</th><th>いいね</th><th>コメント</th><th>シェア</th><th>保存</th>
+  </tr>
+  <tr>
+    <td>8/27</td><td class="l">抹茶パフェ（リール🎬）</td>
+    <td class="num">403</td><td>24</td><td>0</td><td>0</td><td>0</td>
+  </tr>
+  <tr>
+    <td>8/21</td><td class="l">9月営業日カレンダー</td>
+    <td class="num">386</td><td>5</td><td>0</td><td>0</td><td>1</td>
+  </tr>
+  <tr class="hl">
+    <td>8/14</td><td class="l">小鉢ランチ（リール🎬）</td>
+    <td class="num strong-cell">762</td><td>29</td><td>0</td><td class="num strong-cell">2</td><td class="num strong-cell">3</td>
+  </tr>
+  <tr>
+    <td>8/10</td><td class="l">🎊 デザート投票の結果発表</td>
+    <td class="num">679</td><td>25</td><td>0</td><td>0</td><td>2</td>
+  </tr>
+  <tr>
+    <td>8/3</td><td class="l">ご応募ありがとうございました</td>
+    <td class="num">592</td><td>20</td><td>0</td><td>0</td><td>0</td>
+  </tr>
+</table>
+</div>
+<div class="note">
+🎬 <b>小鉢ランチのリールが月間1位（リーチ762・保存3・シェア2）。</b>「リールは伸びる」が初めて数字で証明できました。しかも単品のデザートより「ランチ全体が主役」の方が強い、という発見つきです。ストーリーズも毎日続いていて良い調子です。
+</div>
+
+<h2>🟢 8月、ここが良かった（3つ）</h2>
+<div class="block good">
+<ol class="points">
+  <li><b>リール月2本の目標を初めて達成。</b>初挑戦でいきなり月間最高リーチを取りました。TikTok素材の使い回し作戦が機能しています。</li>
+  <li><b>キャンペーンを最後まで走り切った。</b>お礼投稿（8/3）→結果発表（8/10）→当選DM連絡まで完了。「ちゃんと締める店」の信頼は次の企画の応募率につながります。</li>
+  <li><b>投稿の型が定着。</b>週1ペース継続、本文すっきり、#呉のタグも使い始めました。</li>
+</ol>
+</div>
+
+<h2>🔴 9月に直したいこと（2つ）</h2>
+<div class="block bad">
+<ol class="points">
+  <li><b>リンクのクリックが3ヶ月連続0回。</b>8月にやる予定だった「ストーリーズにリンクスタンプ」がまだ実行されていません。プロフィールまで月1,682回も人が来ているのに、予約・LINEへの入口がない状態が続いています。</li>
+  <li><b>コメント0件。</b>7月の投票で「聞けば答えてくれる」ことは分かっているので、普段の投稿にも軽い問いかけを1行入れましょう。</li>
+</ol>
+</div>
+
+<h2>📌 9月にやること（3つだけ）</h2>
+<div class="block">
+<ol class="points">
+  <li><b>「金曜＝リンクの日」にする。</b>毎週金曜の打ち合わせのタイミングで、ストーリーズを1本＋リンクスタンプ（オートリザーブ予約 or LINE友だち追加）を貼る。忘れない仕組みにするのがポイント。目標：月30クリック。</li>
+  <li><b>リールをもう1本増やして月3本に。</b>勝ちパターンは「料理が主役」型。小鉢ランチの盛り付けや、ランチの湯気など。冒頭2秒に一番おいしそうな瞬間を。</li>
+  <li><b>デザート6種の「保存版」1枚画像を単体投稿する。</b>結果発表の3枚目（価格入り一覧）をそのまま使えるので手間はほぼゼロ。文末は「📌保存して、ご来店の参考にどうぞ」。</li>
+</ol>
+</div>
+<div class="note">
+⚠️ 確認：当選クーポン10名分の<b>有効期限は当選から1ヶ月（＝9月上旬）</b>です。使いに来られた方のレジ処理と、使用された枚数の記録をお願いします。
+</div>
+
+<h2>🎯 目標に対する現在地（10月末まで）</h2>
+<div class="tbl-wrap">
+<table class="kpi">
+  <tr><th>目標（10月末）</th><th>現在</th><th>状況</th></tr>
+  <tr><td>リール 月2本</td><td>2本</td><td class="st">✅ 達成！次は月3本</td></tr>
+  <tr><td>食べ物投稿の保存 8件以上/投稿</td><td>最高 3件</td><td class="st">🟡 保存版投稿で狙う</td></tr>
+  <tr><td>投稿のリーチ 1,500</td><td>最高 762</td><td class="st">🟡 リールが鍵</td></tr>
+  <tr><td>フォロワー 1,600人</td><td>1,474人</td><td class="st">🟡 あと126人</td></tr>
+  <tr><td>リンククリック 月30回</td><td>0回</td><td class="st">🔴 9月の最優先</td></tr>
+</table>
+</div>
+
+<footer>
+用語メモ：リーチ＝投稿を見た「人数」／保存＝あとで見返すためのブックマーク／リール＝短い動画投稿。Instagramはリールと保存の多い投稿を優先的に新しい人へ届けます。<br>
+Café照 Instagram 月次レポート（2026年8月）｜作成：合同会社輝煌・インスタ運用チーム（分析役）
+</footer>
+
+</div>
+</body>
+</html>
