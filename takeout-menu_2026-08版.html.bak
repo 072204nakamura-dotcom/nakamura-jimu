@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<title>テイクアウトメニュー｜Café 照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sage:#3E5C50;
+    --sage-deep:#2E4A40;
+    --gold:#B08D3E;
+    --gold-soft:#C9AE6E;
+    --bordeaux:#7B3B43;
+    --paper:#FBFAF6;
+    --card:#FFFFFF;
+    --ink:#2B2B28;
+    --muted:#7A776D;
+    --line:#E2DED2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--paper);
+       color:var(--ink);line-height:1.7;}
+
+  /* ===== ヒーロー ===== */
+  .hero{background:linear-gradient(168deg,var(--sage-deep) 0%,var(--sage) 100%);
+        color:#F4F1E8;text-align:center;
+        padding:calc(env(safe-area-inset-top) + 40px) 20px 34px;}
+  .hero .shop{font-family:'Shippori Mincho',serif;font-size:13px;font-weight:500;
+              letter-spacing:.4em;text-indent:.4em;color:#D8C9A0;}
+  .hero h1{font-family:'Shippori Mincho',serif;font-weight:600;font-size:29px;
+           letter-spacing:.22em;text-indent:.22em;margin:12px 0 6px;}
+  .hero .en{font-family:'Cormorant Garamond',serif;font-size:13px;
+            letter-spacing:.5em;text-indent:.5em;color:var(--gold-soft);}
+  .hero .lead{font-size:14px;font-weight:400;color:#E8E6DC;max-width:320px;
+              margin:18px auto 0;line-height:1.8;}
+  .hero .dia{width:8px;height:8px;border:1px solid var(--gold-soft);
+             rotate:45deg;margin:20px auto 0;}
+
+  /* ===== タブ（横スクロール） ===== */
+  .tabs{position:sticky;top:0;z-index:10;background:var(--paper);
+        display:flex;gap:8px;padding:12px 16px;
+        border-bottom:1px solid var(--line);
+        overflow-x:auto;-webkit-overflow-scrolling:touch;
+        scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:0 0 auto;padding:9px 18px;font-size:15px;font-weight:500;
+       letter-spacing:.08em;font-family:inherit;white-space:nowrap;
+       border:1px solid var(--line);border-radius:999px;background:#fff;
+       color:#5A574E;cursor:pointer;transition:all .18s ease;}
+  .tab.on{background:var(--sage);border-color:var(--sage);color:#fff;}
+
+  /* ===== リスト ===== */
+  main{max-width:560px;margin:0 auto;padding:8px 16px 30px;}
+  .sec-title{display:flex;align-items:baseline;gap:12px;margin:26px 4px 12px;}
+  .sec-title h2{font-family:'Shippori Mincho',serif;font-weight:600;
+                font-size:18px;letter-spacing:.22em;color:var(--sage);
+                white-space:nowrap;}
+  .sec-title .en{font-family:'Cormorant Garamond',serif;font-style:italic;
+                 font-size:14px;font-weight:600;color:var(--gold);white-space:nowrap;}
+  .sec-title .ln{flex:1;border-top:1px dotted var(--line);}
+
+  .note{font-size:13px;font-weight:400;color:#5A574E;
+        margin:-2px 4px 14px;line-height:1.75;}
+
+  /* ピザカード */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+        padding:16px 16px 14px;margin-bottom:12px;
+        box-shadow:0 1px 4px rgba(62,92,80,.05);}
+  .c-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 8px;}
+  .c-name{font-family:'Shippori Mincho',serif;font-weight:700;font-size:18px;
+          line-height:1.45;}
+  .c-badge{font-size:11.5px;font-weight:500;color:#fff;background:#8F7130;
+           border-radius:3px;padding:3px 9px;letter-spacing:.06em;white-space:nowrap;}
+  .c-kind{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;
+          letter-spacing:.14em;color:#8F7130;margin-top:3px;}
+  .c-desc{font-size:14px;font-weight:400;color:#4E4C45;margin-top:9px;line-height:1.75;}
+  .c-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+            margin-top:12px;}
+  .p-cell{background:var(--paper);border:1px solid var(--line);border-radius:7px;
+          text-align:center;padding:7px 2px 6px;}
+  .p-cell .l{display:block;font-size:11.5px;font-weight:400;color:#5A574E;letter-spacing:.04em;}
+  .p-cell .v{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;
+             font-size:19px;letter-spacing:0;}
+  .p-cell.main{background:#F6F1E3;border-color:var(--gold-soft);}
+  .p-cell.main .l,.p-cell.main .v{color:#8F7130;}
+
+  /* 通常の品目（点線リーダー） */
+  .row{display:flex;align-items:baseline;gap:8px;
+       padding:13px 4px;border-bottom:1px dotted var(--line);}
+  .row .n{font-family:'Shippori Mincho',serif;font-weight:600;font-size:16.5px;}
+  .row .d{flex:1;border-top:1px dotted var(--line);transform:translateY(-4px);}
+  .row .p{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:18px;letter-spacing:0;}
+
+  footer{background:var(--sage-deep);color:#DEDCD0;text-align:center;
+         padding:26px 20px calc(env(safe-area-inset-bottom) + 26px);
+         font-size:12.5px;font-weight:400;line-height:1.95;}
+  footer .shop{font-family:'Shippori Mincho',serif;font-size:14px;font-weight:500;
+               letter-spacing:.3em;color:#F4F1E8;margin-bottom:6px;}
+
+  .hidden{display:none;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="shop">筆の里工房内　Café 照 ─ てらす ─</div>
+  <h1>テイクアウトメニュー</h1>
+  <div class="en">TAKEOUT</div>
+  <p class="lead">おうちでも、お出かけ先でも。<br>レジにてお渡ししています。</p>
+  <div class="dia"></div>
+</header>
+
+<nav class="tabs" aria-label="メニューの絞り込み">
+  <button class="tab on" data-f="all">すべて</button>
+  <button class="tab" data-f="pizza">ピザ</button>
+  <button class="tab" data-f="bento">お弁当</button>
+  <button class="tab" data-f="side">サイド</button>
+  <button class="tab" data-f="sweets">スイーツ</button>
+  <button class="tab" data-f="drink">ドリンク</button>
+</nav>
+
+<main id="list"></main>
+
+<footer>
+  <div class="shop">Café 照 ─ てらす ─</div>
+  広島県安芸郡熊野町　筆の里工房内<br>
+  表示価格はすべて税込です。お持ち帰りには軽減税率（8%）が適用されています。<br>
+  仕込みの状況により、ご用意できない場合がございます。
+</footer>
+
+<script>
+/* ▼▼ 毎月の書き替えはここだけ：魚介系と肉系のname・descを差し替える ▼▼ */
+const PIZZA=[
+  {kind:"定番", name:"Tマルゲリータ",
+   d:"トマトとチーズ、バジル。まずはここから。",
+   full:980, half:650, piece:400},
+  {kind:"魚介系", badge:"8月の月替わり", name:"T海老と舞茸のジェノベーゼ",
+   d:"海老のうまみに、バジルの香りをのせて。",
+   full:980, half:650, piece:400},
+  {kind:"肉系", badge:"8月の月替わり", name:"Tモルタデッラとコーンのクリームソース",
+   d:"イタリアのハムと、コーンのやさしい甘み。",
+   full:980, half:650, piece:400},
+  {kind:"チーズ系", name:"Tクワトロファルマッジ",
+   d:"4種のチーズを、贅沢に重ねて。",
+   full:1280, half:880, piece:500},
+];
+/* ▲▲ ここまで ▲▲ */
+
+/* 商品名はfunfoの登録名に合わせています（Tはテイクアウトの意味） */
+const ITEMS=[
+  // お弁当
+  {t:"bento", n:"T鳥コーロー弁当", p:1000},
+  {t:"bento", n:"T唐揚げ弁当", p:1000},
+  {t:"bento", n:"Tチキン南蛮弁当", p:1100},
+  {t:"bento", n:"T白ごはん", p:200},
+  // サイド
+  {t:"side", n:"Tポテト", p:350},
+  {t:"side", n:"T唐揚げ 180g", p:600},
+  // スイーツ
+  {t:"sweets", n:"Tワッフルコーン", p:430},
+  {t:"sweets", n:"Tオレオソフト", p:450},
+  {t:"sweets", n:"Tいちごソフト", p:450},
+  {t:"sweets", n:"Tベリーパフェ", p:880},
+  {t:"sweets", n:"Tチョコパフェ", p:880},
+  {t:"sweets", n:"T抹茶パフェ", p:880},
+  {t:"sweets", n:"Tバスクチーズ", p:420},
+  {t:"sweets", n:"Tガトーショコラ", p:420},
+  // ドリンク
+  {t:"drink", n:"Tホットコーヒー", p:400},
+  {t:"drink", n:"Tアイスコーヒー", p:400},
+  {t:"drink", n:"Tアイスカフェラテ", p:500},
+  {t:"drink", n:"Tたっぷりカフェラテ", p:500},
+  {t:"drink", n:"T紅茶", p:350},
+  {t:"drink", n:"Tアイスティー", p:350},
+  {t:"drink", n:"Tごぼう茶", p:440},
+  {t:"drink", n:"Tエキゾチックティー", p:500},
+  {t:"drink", n:"Tハニーレンジャー", p:500},
+  {t:"drink", n:"Tクリームソーダ", p:700},
+  {t:"drink", n:"Tアップル", p:350},
+  {t:"drink", n:"Tマンゴー", p:350},
+  {t:"drink", n:"Tコーラ", p:450},
+  {t:"drink", n:"Tジンジャエール", p:450},
+  {t:"drink", n:"Tアンパンマンジュース", p:130},
+];
+
+const SECTIONS=[
+  {t:"pizza",  ja:"窯焼きピザ", en:"Pizza"},
+  {t:"bento",  ja:"お弁当",     en:"Bento"},
+  {t:"side",   ja:"サイド",     en:"Side"},
+  {t:"sweets", ja:"スイーツ",   en:"Sweets"},
+  {t:"drink",  ja:"ドリンク",   en:"Drink"},
+];
+
+const yen=n=>"¥"+n.toLocaleString("ja-JP");
+
+function pizzaCard(z){
+  const badge=z.badge?`<span class="c-badge">${z.badge}</span>`:"";
+  return `<article class="card" data-t="pizza">
+    <div class="c-top"><span class="c-name">${z.name}</span>${badge}</div>
+    <div class="c-kind">${z.kind}</div>
+    <p class="c-desc">${z.d}</p>
+    <div class="c-prices">
+      <div class="p-cell main"><span class="l">フル</span><span class="v">${yen(z.full)}</span></div>
+      <div class="p-cell"><span class="l">ハーフ</span><span class="v">${yen(z.half)}</span></div>
+      <div class="p-cell"><span class="l">2切れ</span><span class="v">${yen(z.piece)}</span></div>
+    </div>
+  </article>`;
+}
+
+function row(i){
+  return `<div class="row" data-t="${i.t}">
+    <span class="n">${i.n}</span><span class="d"></span><span class="p">${yen(i.p)}</span>
+  </div>`;
+}
+
+function secTitle(s){
+  return `<div class="sec-title" data-t="${s.t}"><h2>${s.ja}</h2><span class="en">${s.en}</span><span class="ln"></span></div>`;
+}
+
+function render(){
+  let html="";
+  SECTIONS.forEach(s=>{
+    html+=secTitle(s);
+    if(s.t==="pizza"){
+      html+=`<p class="note" data-t="pizza">魚介系と肉系は毎月変わります。江別製粉の北海道産小麦100%の生地を、窯で焼き上げています。</p>`;
+      html+=PIZZA.map(pizzaCard).join("");
+    }else{
+      html+=ITEMS.filter(i=>i.t===s.t).map(row).join("");
+    }
+  });
+  document.getElementById("list").innerHTML=html;
+}
+render();
+
+document.querySelectorAll(".tab").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    const f=b.dataset.f;
+    document.querySelectorAll("[data-t]").forEach(n=>{
+      n.classList.toggle("hidden", f!=="all" && n.dataset.t!==f);
+    });
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+</script>
+</body>
+</html>
