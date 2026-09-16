@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F0DF">
+<meta name="color-scheme" content="light only">
+<meta name="apple-mobile-web-app-title" content="輝煌">
+<link rel="apple-touch-icon" sizes="180x180" href="portal-icon.png">
+<link rel="icon" type="image/png" href="portal-icon.png">
+<title>輝煌 お店の道具箱｜なかむら・Café照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --washi:#F7F0DF;        /* 和紙 */
+  --paper:#FFFDF6;        /* カードの紙 */
+  --ink:#241408;          /* 墨 */
+  --ink-soft:#6B5A44;     /* 薄墨 */
+  --gold:#C2A35B;         /* 金線 */
+  --navy:#22375C;         /* なかむらの藍 */
+  --green:#0B5A40;        /* 照の深緑 */
+  --brown:#6B4A23;        /* 事務の焦茶 */
+  --kincha:#A5852F;       /* お客様向けメニューの山吹茶 */
+  --mincho:'Shippori Mincho B1',serif;
+  --gothic:'Zen Kaku Gothic New',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--washi)}
+body{
+  font-family:var(--gothic);
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 500px at 50% -200px, rgba(194,163,91,.10), transparent 70%),
+    var(--washi);
+  min-height:100vh;
+  padding:calc(env(safe-area-inset-top) + 28px) 18px calc(env(safe-area-inset-bottom) + 36px);
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:520px;margin:0 auto}
+
+/* ── 看板 ── */
+header{text-align:center;margin-bottom:30px}
+.eyebrow{
+  font-family:var(--gothic);font-size:11px;font-weight:500;
+  letter-spacing:.42em;text-indent:.42em;color:var(--ink-soft);
+  margin-bottom:10px;
+}
+h1{
+  font-family:var(--mincho);font-weight:800;
+  font-size:46px;letter-spacing:.34em;text-indent:.34em;
+  line-height:1;color:var(--ink);
+}
+.stroke{display:block;width:168px;margin:10px auto 12px}
+.tagline{
+  font-family:var(--mincho);font-weight:600;font-size:13px;
+  letter-spacing:.3em;text-indent:.3em;color:var(--ink-soft);
+}
+
+/* ── 章（お店ごと）── */
+section{margin-bottom:26px}
+.sec-head{
+  display:flex;align-items:baseline;gap:10px;
+  margin:0 2px 10px;
+}
+.sec-name{
+  font-family:var(--mincho);font-weight:700;font-size:15px;
+  letter-spacing:.14em;white-space:nowrap;
+}
+.sec-rule{flex:1;height:1px;background:linear-gradient(to right,var(--gold),rgba(194,163,91,.15));position:relative;top:-3px}
+.s-nakamura .sec-name{color:var(--navy)}
+.s-terrasse .sec-name{color:var(--green)}
+.s-jimu     .sec-name{color:var(--brown)}
+.s-menu     .sec-name{color:var(--kincha)}
+
+/* ── アプリ札 ── */
+.card{
+  display:flex;align-items:center;gap:13px;
+  background:var(--paper);
+  border:1px solid rgba(107,74,35,.22);
+  border-radius:12px;
+  padding:13px 14px;
+  margin-bottom:9px;
+  min-height:64px;
+  text-decoration:none;color:inherit;
+  box-shadow:0 1px 2px rgba(36,20,8,.05);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.card:active{transform:scale(.985)}
+.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* 印章（判子）*/
+.seal{
+  flex:0 0 42px;width:42px;height:42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mincho);font-weight:800;font-size:19px;color:#FFFDF6;
+  box-shadow:inset 0 0 0 2px rgba(255,253,246,.35);
+}
+.s-nakamura .seal{background:var(--navy)}
+.s-terrasse .seal{background:var(--green)}
+.s-jimu     .seal{background:var(--brown)}
+.s-menu     .seal{background:var(--kincha)}
+
+.card-body{flex:1;min-width:0}
+.card-name{
+  font-family:var(--mincho);font-weight:700;font-size:16px;
+  letter-spacing:.05em;line-height:1.35;
+}
+.card-desc{
+  font-size:11.5px;font-weight:400;color:var(--ink-soft);
+  letter-spacing:.03em;margin-top:2px;line-height:1.4;
+}
+.chev{
+  flex:0 0 auto;color:rgba(107,74,35,.5);
+  font-family:var(--gothic);font-size:15px;
+}
+
+/* ── 奥付 ── */
+footer{
+  text-align:center;margin-top:34px;
+  font-size:10.5px;letter-spacing:.2em;color:var(--ink-soft);
+  font-family:var(--mincho);font-weight:600;
+}
+footer .fdot{color:var(--gold);padding:0 6px}
+
+/* ── 静かな登場（動きを控える設定なら省略）── */
+@media (prefers-reduced-motion: no-preference){
+  header, section, footer{animation:rise .5s ease both}
+  section:nth-of-type(1){animation-delay:.06s}
+  section:nth-of-type(2){animation-delay:.12s}
+  section:nth-of-type(3){animation-delay:.18s}
+  section:nth-of-type(4){animation-delay:.24s}
+  footer{animation-delay:.3s}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">合同会社 輝煌</p>
+  <h1>輝&#8202;煌</h1>
+  <svg class="stroke" viewBox="0 0 200 14" aria-hidden="true">
+    <path d="M3,9 C42,2.5 96,11.5 142,7 C165,4.8 186,4.2 197,6.4
+             C186,8.6 158,10.8 128,10.4 C86,9.9 40,12.5 3,9 Z"
+          fill="#241408" opacity=".82"/>
+  </svg>
+  <p class="tagline">お店の道具箱</p>
+</header>
+
+<section class="s-nakamura">
+  <div class="sec-head"><span class="sec-name">洋食だいにんぐ なかむら</span><span class="sec-rule"></span></div>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-menu/">
+    <span class="seal">献</span>
+    <span class="card-body">
+      <span class="card-name">献立管理システム</span>
+      <span class="card-desc">コース献立の作成・お品書き印刷・献立表印刷</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-jimu/akizy-admin.html">
+    <span class="seal">管</span>
+    <span class="card-body">
+      <span class="card-name">空き状況カレンダー管理</span>
+      <span class="card-desc">空き状況の入力（お店用）</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-jimu/akizy-view.html">
+    <span class="seal">覧</span>
+    <span class="card-body">
+      <span class="card-name">空き状況カレンダー</span>
+      <span class="card-desc">お客様向けの空き状況表示</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace-Recipe/recipe-notebook.html">
+    <span class="seal">帖</span>
+    <span class="card-body">
+      <span class="card-name">レシピ帳</span>
+      <span class="card-desc">なかむらのレシピ記録</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+</section>
+
+<section class="s-terrasse">
+  <div class="sec-head"><span class="sec-name">Café 照（カフェてらす）</span><span class="sec-rule"></span></div>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace/">
+    <span class="seal">鉢</span>
+    <span class="card-body">
+      <span class="card-name">小鉢ランチ お品書き</span>
+      <span class="card-desc">日替わり小鉢とメインの入力・印刷</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/pizza-dough-app/">
+    <span class="seal">麦</span>
+    <span class="card-body">
+      <span class="card-name">ピザ生地育成アプリ</span>
+      <span class="card-desc">ビガ生地の仕込み・発酵記録（スタッフ共有）</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace-Recipe/">
+    <span class="seal">匙</span>
+    <span class="card-body">
+      <span class="card-name">レシピ管理</span>
+      <span class="card-desc">Café照のレシピ記録</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-jimu/lottery.html">
+    <span class="seal">抽</span>
+    <span class="card-body">
+      <span class="card-name">キャンペーン抽選</span>
+      <span class="card-desc">Instagramキャンペーンの当選抽選（8/2締切分）</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+</section>
+
+<section class="s-menu">
+  <div class="sec-head"><span class="sec-name">お客様向けメニュー</span><span class="sec-rule"></span></div>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-menu/menu.html">
+    <span class="seal">品</span>
+    <span class="card-body">
+      <span class="card-name">メニュー一覧（なかむら）</span>
+      <span class="card-desc">コース・アラカルト・ドリンク・ワイン・お子様・中国茶の入口</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace/takeout-menu.html">
+    <span class="seal">包</span>
+    <span class="card-body">
+      <span class="card-name">テイクアウトメニュー（Café照）</span>
+      <span class="card-desc">お持ち帰りメニューのご案内</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+</section>
+
+<section class="s-jimu">
+  <div class="sec-head"><span class="sec-name">ふたつのお店・事務</span><span class="sec-rule"></span></div>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/">
+    <span class="seal">勤</span>
+    <span class="card-body">
+      <span class="card-name">シフト管理（両店）</span>
+      <span class="card-desc">なかむら・Café照の勤務表づくり（昼夜切替）</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/unified-view.html">
+    <span class="seal">表</span>
+    <span class="card-body">
+      <span class="card-name">出勤表（両店）</span>
+      <span class="card-desc">スタッフ閲覧用・両店まとめた統合ビュー</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/kibou.html">
+    <span class="seal">休</span>
+    <span class="card-body">
+      <span class="card-name">休み希望カレンダー</span>
+      <span class="card-desc">スタッフの休み希望の提出・確認</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/sozai-recipe/">
+    <span class="seal">菜</span>
+    <span class="card-body">
+      <span class="card-name">お惣菜レシピ帳</span>
+      <span class="card-desc">音声で作るレシピ帳・g単価と写真も記録</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/aisho-note/">
+    <span class="seal">相</span>
+    <span class="card-body">
+      <span class="card-name">相性ノート</span>
+      <span class="card-desc">主食材×調理法で相性を育てる自分専用辞典</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/nakamura-jimu/">
+    <span class="seal">事</span>
+    <span class="card-body">
+      <span class="card-name">なかむら事務ツール</span>
+      <span class="card-desc">経理・書類まわりの道具箱</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+</section>
+
+<footer>
+  洋食だいにんぐ なかむら<span class="fdot">・</span>Café 照<span class="fdot">・</span>広島県安芸郡熊野町
+</footer>
+
+</div>
+</body>
+</html>
