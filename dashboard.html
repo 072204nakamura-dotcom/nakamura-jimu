@@ -20,6 +20,9 @@
 const GAS_URL    = 'https://script.google.com/macros/s/AKfycbwqWgqHS1VSv6ZQwIMorpP3nfwOWBoWgrxAffh7wJQW7R5QGHqn5yLxWv2W5E06Uuyi/exec';
 const YOYAKU_URL = 'https://script.google.com/macros/s/AKfycby2EL8vYJiaSI0IDYI_-zHtV10PHYvglyRg6XvoRvFtYLg17_mjpsQbCp1DD2fzu20dEQ/exec';
 
+/* RECIPE_URL … レシピ管理システムのGAS URL（ご意見箱を読み込みます。空にすると非表示） */
+const RECIPE_URL = 'https://script.google.com/macros/s/AKfycbxfIp_fyisYQyXsy_oOL4q1gMRk9KExHjgtZQBv_HvSJbvMukINH8f7pmy8wUX0cChO/exec';
+
 
 /* ============================================================
    予備の設定（クラウドが読めなかったときだけ使われます）
@@ -139,6 +142,18 @@ body{
 .doing-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
 .doing-item:last-child{border-bottom:none}
 .doing-mark{flex:0 0 auto;font-size:12px;color:var(--amber);font-weight:700;margin-top:3px}
+.fb-sec{margin-top:26px}
+.fb-card{border-left:4px solid var(--sage);background:#FAFCF9}
+.fb-item{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.fb-item:last-child{border-bottom:none}
+.fb-head{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap}
+.fb-kind{font-size:11px;font-weight:700;color:#fff;background:var(--sage);border-radius:10px;padding:1px 9px}
+.fb-kind.k-bug{background:var(--alert)}
+.fb-kind.k-want{background:var(--amber)}
+.fb-name{font-size:12px;color:var(--ink-2);font-weight:700}
+.fb-at{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--ash);margin-left:auto}
+.fb-text{font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
+.fb-note{font-size:11.5px;color:var(--ash);margin-top:9px;padding-top:8px;border-top:1px solid var(--line-soft)}
 .d-tx{font-size:14.5px;line-height:1.5}
 .d-meta{font-size:12px;color:var(--ash);line-height:1.5}
 .d-meta b{color:var(--amber);font-weight:700}
@@ -268,6 +283,14 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
     <div class="card doing-card">
       <h2>いま手をつけているもの<span id="doingCount"></span></h2>
       <div id="doingList"></div>
+    </div>
+  </section>
+
+  <section class="fb-sec" id="fbSec" hidden>
+    <div class="card fb-card">
+      <h2>スタッフからのご意見<span id="fbCount"></span></h2>
+      <div id="fbList"></div>
+      <div class="fb-note">対応したら、スプレッドシートの DATA_FEEDBACK シートの STATUS 欄に書き込むとここから消えます</div>
     </div>
   </section>
 
@@ -412,6 +435,71 @@ async function loadAll(){
     document.getElementById("footNote").textContent = "オフライン表示中";
   }
   loadYoyaku();
+  loadFeedback();
+}
+
+/* ============================================================
+   ご意見箱（レシピ管理システム）
+   ============================================================ */
+async function loadFeedback(){
+  const sec = document.getElementById("fbSec");
+  if (!RECIPE_URL){ sec.hidden = true; return; }
+  try{
+    const res  = await fetch(RECIPE_URL + "?type=feedback&open=1&t=" + Date.now());
+    const data = await res.json();
+    const list = (data && data.ok && data.data && data.data.feedback) ? data.data.feedback : [];
+    renderFeedback(list);
+  }catch(err){
+    sec.hidden = true;   // 読めなかったときは静かに隠す
+  }
+}
+
+function renderFeedback(list){
+  const sec  = document.getElementById("fbSec");
+  const box  = document.getElementById("fbList");
+  if (!list || !list.length){ sec.hidden = true; return; }
+
+  box.innerHTML = "";
+  list.forEach(fb => {
+    const item = document.createElement("div");
+    item.className = "fb-item";
+
+    const head = document.createElement("div");
+    head.className = "fb-head";
+
+    const kind = document.createElement("span");
+    const k = String(fb.kind || "その他");
+    kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
+    kind.textContent = k;
+    head.appendChild(kind);
+
+    const name = document.createElement("span");
+    name.className = "fb-name";
+    name.textContent = fb.name ? fb.name : "（匿名）";
+    head.appendChild(name);
+
+    const at = document.createElement("span");
+    at.className = "fb-at";
+    at.textContent = shortDate(fb.at);
+    head.appendChild(at);
+
+    const text = document.createElement("div");
+    text.className = "fb-text";
+    text.textContent = fb.text || "";
+
+    item.append(head, text);
+    box.appendChild(item);
+  });
+
+  document.getElementById("fbCount").textContent = list.length + "件";
+  sec.hidden = false;
+}
+
+/* 「2026/9/21 10:30:00」→「9/21」 */
+function shortDate(s){
+  const m = String(s || "").match(/(\d{1,2})[\/月-](\d{1,2})/);
+  if (m) return m[1] + "/" + m[2];
+  return String(s || "").slice(0, 10);
 }
 
 /* 保存（少し待ってからまとめて送る） */
@@ -786,17 +874,10 @@ function renderProjects(){
 }
 
 /* --- リンク --- */
-// シフト関連の固定リンク（GAS側の設定に関係なく常に表示）
-const SHIFT_LINKS = { group: "シフト・休み希望", accent: "amber", items: [
-  { name: "統合シフト管理（Cafe照×なかむら）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/" },
-  { name: "🗓 休み希望カレンダー（スタッフ用）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/kibou.html" },
-  { name: "出勤表（従業員閲覧用）", url: "https://072204nakamura-dotcom.github.io/Cafe-Terrace-Shift/unified-view.html" }
-]};
 function renderLinks(){
   const grid = document.getElementById("linkGrid");
   grid.innerHTML = "";
-  const _groups = (CONFIG.links || []).filter(g => g.group !== SHIFT_LINKS.group).concat([SHIFT_LINKS]);
-  _groups.forEach(g => {
+  (CONFIG.links || []).forEach(g => {
     const col = document.createElement("div");
     const title = document.createElement("div");
     title.className = "lgroup-title " + (g.accent || "ash");
