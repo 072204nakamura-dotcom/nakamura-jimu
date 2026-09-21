@@ -154,6 +154,13 @@ body{
 .fb-at{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--ash);margin-left:auto}
 .fb-text{font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
 .fb-note{font-size:11.5px;color:var(--ash);margin-top:9px;padding-top:8px;border-top:1px solid var(--line-soft)}
+.fb-app{font-size:11px;font-weight:700;color:var(--ink-2);background:rgba(35,42,39,.06);border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+.fb-foot{display:flex;align-items:center;margin-top:6px}
+.fb-done{margin-left:auto;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11.5px;font-weight:700;color:var(--sage);
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 13px;cursor:pointer}
+.fb-done:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
+.fb-done:disabled{opacity:.45;cursor:default}
+.fb-item.is-done{opacity:.4}
 .d-tx{font-size:14.5px;line-height:1.5}
 .d-meta{font-size:12px;color:var(--ash);line-height:1.5}
 .d-meta b{color:var(--amber);font-weight:700}
@@ -290,7 +297,7 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
     <div class="card fb-card">
       <h2>スタッフからのご意見<span id="fbCount"></span></h2>
       <div id="fbList"></div>
-      <div class="fb-note">対応したら、スプレッドシートの DATA_FEEDBACK シートの STATUS 欄に書き込むとここから消えます</div>
+      <div class="fb-note">「対応済にする」を押すと、スプレッドシートの STATUS 欄に印が付いてここから消えます</div>
     </div>
   </section>
 
@@ -467,6 +474,13 @@ function renderFeedback(list){
     const head = document.createElement("div");
     head.className = "fb-head";
 
+    if (fb.app){
+      const app = document.createElement("span");
+      app.className = "fb-app";
+      app.textContent = fb.app;
+      head.appendChild(app);
+    }
+
     const kind = document.createElement("span");
     const k = String(fb.kind || "その他");
     kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
@@ -487,12 +501,44 @@ function renderFeedback(list){
     text.className = "fb-text";
     text.textContent = fb.text || "";
 
-    item.append(head, text);
+    const foot = document.createElement("div");
+    foot.className = "fb-foot";
+    const done = document.createElement("button");
+    done.className = "fb-done";
+    done.textContent = "対応済にする";
+    done.addEventListener("click", () => markFeedbackDone(fb, item, done));
+    foot.appendChild(done);
+
+    item.append(head, text, foot);
     box.appendChild(item);
   });
 
   document.getElementById("fbCount").textContent = list.length + "件";
   sec.hidden = false;
+}
+
+/* 対応済にする（シートのSTATUS欄に書き込む） */
+function markFeedbackDone(fb, item, btn){
+  if (!RECIPE_URL || !fb.row) return;
+  btn.disabled = true;
+  btn.textContent = "対応済";
+  item.classList.add("is-done");
+  const stamp = new Date();
+  const label = "済 " + (stamp.getMonth()+1) + "/" + stamp.getDate();
+  try{
+    fetch(RECIPE_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "feedback_status", data: { row: fb.row, status: label } })
+    });
+  }catch(e){}
+  /* 表示中の残り件数を更新し、0になったらカードごと隠す */
+  setTimeout(() => {
+    item.remove();
+    const left = document.querySelectorAll("#fbList .fb-item").length;
+    if (!left) document.getElementById("fbSec").hidden = true;
+    else document.getElementById("fbCount").textContent = left + "件";
+  }, 600);
 }
 
 /* 「2026/9/21 10:30:00」→「9/21」 */
