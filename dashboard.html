@@ -20,9 +20,6 @@
 const GAS_URL    = 'https://script.google.com/macros/s/AKfycbwqWgqHS1VSv6ZQwIMorpP3nfwOWBoWgrxAffh7wJQW7R5QGHqn5yLxWv2W5E06Uuyi/exec';
 const YOYAKU_URL = 'https://script.google.com/macros/s/AKfycby2EL8vYJiaSI0IDYI_-zHtV10PHYvglyRg6XvoRvFtYLg17_mjpsQbCp1DD2fzu20dEQ/exec';
 
-/* RECIPE_URL … レシピ管理システムのGAS URL（ご意見箱を読み込みます。空にすると非表示） */
-const RECIPE_URL = 'https://script.google.com/macros/s/AKfycbxfIp_fyisYQyXsy_oOL4q1gMRk9KExHjgtZQBv_HvSJbvMukINH8f7pmy8wUX0cChO/exec';
-
 
 /* ============================================================
    予備の設定（クラウドが読めなかったときだけ使われます）
@@ -142,25 +139,6 @@ body{
 .doing-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
 .doing-item:last-child{border-bottom:none}
 .doing-mark{flex:0 0 auto;font-size:12px;color:var(--amber);font-weight:700;margin-top:3px}
-.fb-sec{margin-top:26px}
-.fb-card{border-left:4px solid var(--sage);background:#FAFCF9}
-.fb-item{padding:9px 0;border-bottom:1px solid var(--line-soft)}
-.fb-item:last-child{border-bottom:none}
-.fb-head{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap}
-.fb-kind{font-size:11px;font-weight:700;color:#fff;background:var(--sage);border-radius:10px;padding:1px 9px}
-.fb-kind.k-bug{background:var(--alert)}
-.fb-kind.k-want{background:var(--amber)}
-.fb-name{font-size:12px;color:var(--ink-2);font-weight:700}
-.fb-at{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--ash);margin-left:auto}
-.fb-text{font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
-.fb-note{font-size:11.5px;color:var(--ash);margin-top:9px;padding-top:8px;border-top:1px solid var(--line-soft)}
-.fb-app{font-size:11px;font-weight:700;color:var(--ink-2);background:rgba(35,42,39,.06);border:1px solid var(--line);border-radius:10px;padding:1px 8px}
-.fb-foot{display:flex;align-items:center;margin-top:6px}
-.fb-done{margin-left:auto;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11.5px;font-weight:700;color:var(--sage);
-  background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 13px;cursor:pointer}
-.fb-done:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
-.fb-done:disabled{opacity:.45;cursor:default}
-.fb-item.is-done{opacity:.4}
 .d-tx{font-size:14.5px;line-height:1.5}
 .d-meta{font-size:12px;color:var(--ash);line-height:1.5}
 .d-meta b{color:var(--amber);font-weight:700}
@@ -247,6 +225,26 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
   .seg{font-size:10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+/* --- ご意見箱カード --- */
+.fb-sec{margin-top:26px}
+.fb-card{border-left:4px solid var(--sage);background:#FAFCF9}
+.fb-item{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.fb-item:last-child{border-bottom:none}
+.fb-head{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap}
+.fb-kind{font-size:11px;font-weight:700;color:#fff;background:var(--sage);border-radius:10px;padding:1px 9px}
+.fb-kind.k-bug{background:var(--alert)}
+.fb-kind.k-want{background:var(--amber)}
+.fb-name{font-size:12px;color:var(--ink-2);font-weight:700}
+.fb-at{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--ash);margin-left:auto}
+.fb-text{font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
+.fb-note{font-size:11.5px;color:var(--ash);margin-top:9px;padding-top:8px;border-top:1px solid var(--line-soft)}
+.fb-app{font-size:11px;font-weight:700;color:var(--ink-2);background:rgba(35,42,39,.06);border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+.fb-foot{display:flex;align-items:center;margin-top:6px}
+.fb-done{margin-left:auto;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11.5px;font-weight:700;color:var(--sage);
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 13px;cursor:pointer}
+.fb-done:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
+.fb-done:disabled{opacity:.45;cursor:default}
+.fb-item.is-done{opacity:.4}
 </style>
 </head>
 <body>
@@ -293,6 +291,7 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
     </div>
   </section>
 
+  <!-- ご意見箱カード -->
   <section class="fb-sec" id="fbSec" hidden>
     <div class="card fb-card">
       <h2>スタッフからのご意見<span id="fbCount"></span></h2>
@@ -442,110 +441,6 @@ async function loadAll(){
     document.getElementById("footNote").textContent = "オフライン表示中";
   }
   loadYoyaku();
-  loadFeedback();
-}
-
-/* ============================================================
-   ご意見箱（レシピ管理システム）
-   ============================================================ */
-async function loadFeedback(){
-  const sec = document.getElementById("fbSec");
-  if (!RECIPE_URL){ sec.hidden = true; return; }
-  try{
-    const res  = await fetch(RECIPE_URL + "?type=feedback&open=1&t=" + Date.now());
-    const data = await res.json();
-    const list = (data && data.ok && data.data && data.data.feedback) ? data.data.feedback : [];
-    renderFeedback(list);
-  }catch(err){
-    sec.hidden = true;   // 読めなかったときは静かに隠す
-  }
-}
-
-function renderFeedback(list){
-  const sec  = document.getElementById("fbSec");
-  const box  = document.getElementById("fbList");
-  if (!list || !list.length){ sec.hidden = true; return; }
-
-  box.innerHTML = "";
-  list.forEach(fb => {
-    const item = document.createElement("div");
-    item.className = "fb-item";
-
-    const head = document.createElement("div");
-    head.className = "fb-head";
-
-    if (fb.app){
-      const app = document.createElement("span");
-      app.className = "fb-app";
-      app.textContent = fb.app;
-      head.appendChild(app);
-    }
-
-    const kind = document.createElement("span");
-    const k = String(fb.kind || "その他");
-    kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
-    kind.textContent = k;
-    head.appendChild(kind);
-
-    const name = document.createElement("span");
-    name.className = "fb-name";
-    name.textContent = fb.name ? fb.name : "（匿名）";
-    head.appendChild(name);
-
-    const at = document.createElement("span");
-    at.className = "fb-at";
-    at.textContent = shortDate(fb.at);
-    head.appendChild(at);
-
-    const text = document.createElement("div");
-    text.className = "fb-text";
-    text.textContent = fb.text || "";
-
-    const foot = document.createElement("div");
-    foot.className = "fb-foot";
-    const done = document.createElement("button");
-    done.className = "fb-done";
-    done.textContent = "対応済にする";
-    done.addEventListener("click", () => markFeedbackDone(fb, item, done));
-    foot.appendChild(done);
-
-    item.append(head, text, foot);
-    box.appendChild(item);
-  });
-
-  document.getElementById("fbCount").textContent = list.length + "件";
-  sec.hidden = false;
-}
-
-/* 対応済にする（シートのSTATUS欄に書き込む） */
-function markFeedbackDone(fb, item, btn){
-  if (!RECIPE_URL || !fb.row) return;
-  btn.disabled = true;
-  btn.textContent = "対応済";
-  item.classList.add("is-done");
-  const stamp = new Date();
-  const label = "済 " + (stamp.getMonth()+1) + "/" + stamp.getDate();
-  try{
-    fetch(RECIPE_URL, {
-      method: "POST", mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "feedback_status", data: { row: fb.row, status: label } })
-    });
-  }catch(e){}
-  /* 表示中の残り件数を更新し、0になったらカードごと隠す */
-  setTimeout(() => {
-    item.remove();
-    const left = document.querySelectorAll("#fbList .fb-item").length;
-    if (!left) document.getElementById("fbSec").hidden = true;
-    else document.getElementById("fbCount").textContent = left + "件";
-  }, 600);
-}
-
-/* 「2026/9/21 10:30:00」→「9/21」 */
-function shortDate(s){
-  const m = String(s || "").match(/(\d{1,2})[\/月-](\d{1,2})/);
-  if (m) return m[1] + "/" + m[2];
-  return String(s || "").slice(0, 10);
 }
 
 /* 保存（少し待ってからまとめて送る） */
@@ -957,9 +852,87 @@ memoEl.addEventListener("input", () => {
 
 
 /* ============================================================
+   ご意見箱（献立管理システムのGASから読む）
+   ============================================================ */
+const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbwqIJ_b3CTXJsHoi42encJbSyP-ZGwRKzQZKqQmCbpWgd_Eh3LTtIkwWz1nmKIuHQXTpg/exec';
+
+async function loadFeedback(){
+  const sec = document.getElementById("fbSec");
+  if (!FEEDBACK_URL){ sec.hidden = true; return; }
+  try{
+    const res  = await fetch(FEEDBACK_URL + "?type=feedback&open=1&t=" + Date.now());
+    const data = await res.json();
+    const list = (data && data.ok && data.data && data.data.feedback) ? data.data.feedback : [];
+    renderFeedback(list);
+  }catch(err){ sec.hidden = true; }
+}
+
+function renderFeedback(list){
+  const sec  = document.getElementById("fbSec");
+  const box  = document.getElementById("fbList");
+  if (!list || !list.length){ sec.hidden = true; return; }
+  box.innerHTML = "";
+  list.forEach(fb => {
+    const item = document.createElement("div");
+    item.className = "fb-item";
+    const head = document.createElement("div");
+    head.className = "fb-head";
+    if (fb.app){
+      const app = document.createElement("span");
+      app.className = "fb-app"; app.textContent = fb.app; head.appendChild(app);
+    }
+    const kind = document.createElement("span");
+    const k = String(fb.kind || "その他");
+    kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
+    kind.textContent = k; head.appendChild(kind);
+    const name = document.createElement("span");
+    name.className = "fb-name"; name.textContent = fb.name ? fb.name : "（匿名）"; head.appendChild(name);
+    const at = document.createElement("span");
+    at.className = "fb-at"; at.textContent = fbShortDate(fb.at); head.appendChild(at);
+    const text = document.createElement("div");
+    text.className = "fb-text"; text.textContent = fb.text || "";
+    const foot = document.createElement("div");
+    foot.className = "fb-foot";
+    const done = document.createElement("button");
+    done.className = "fb-done"; done.textContent = "対応済にする";
+    done.addEventListener("click", () => markFeedbackDone(fb, item, done));
+    foot.appendChild(done);
+    item.append(head, text, foot);
+    box.appendChild(item);
+  });
+  document.getElementById("fbCount").textContent = list.length + "件";
+  sec.hidden = false;
+}
+
+function markFeedbackDone(fb, item, btn){
+  if (!FEEDBACK_URL || !fb.row) return;
+  btn.disabled = true; btn.textContent = "対応済"; item.classList.add("is-done");
+  const stamp = new Date();
+  const label = "済 " + (stamp.getMonth()+1) + "/" + stamp.getDate();
+  try{
+    fetch(FEEDBACK_URL, { method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "feedback_status", data: { row: fb.row, status: label } }) });
+  }catch(e){}
+  setTimeout(() => {
+    item.remove();
+    const left = document.querySelectorAll("#fbList .fb-item").length;
+    if (!left) document.getElementById("fbSec").hidden = true;
+    else document.getElementById("fbCount").textContent = left + "件";
+  }, 600);
+}
+
+function fbShortDate(s){
+  const m = String(s || "").match(/(\d{1,2})[\/月-](\d{1,2})/);
+  if (m) return m[1] + "/" + m[2];
+  return String(s || "").slice(0, 10);
+}
+
+/* ============================================================
    起動
    ============================================================ */
 loadAll();
+loadFeedback();
 setInterval(() => { renderHeader(); renderBand(); }, 30000);
 </script>
 </body>
