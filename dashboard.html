@@ -245,6 +245,12 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
 .fb-done:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
 .fb-done:disabled{opacity:.45;cursor:default}
 .fb-item.is-done{opacity:.4}
+.fb-item.fb-handled{opacity:.55}
+.fb-check{color:var(--sage);font-weight:700;font-size:13px}
+.fb-none{font-size:12.5px;color:var(--ash);padding:6px 0}
+.fb-toggle{font-family:"Zen Kaku Gothic New",sans-serif;font-size:11.5px;font-weight:700;color:var(--ink-2);
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 13px;cursor:pointer;margin-top:8px}
+.fb-toggle:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
 </style>
 </head>
 <body>
@@ -296,7 +302,11 @@ textarea:focus-visible{outline:2px solid var(--sage);outline-offset:-1px}
     <div class="card fb-card">
       <h2>スタッフからのご意見<span id="fbCount"></span></h2>
       <div id="fbList"></div>
-      <div class="fb-note">「対応済にする」を押すと、スプレッドシートの STATUS 欄に印が付いてここから消えます</div>
+      <div id="fbDoneWrap" hidden>
+        <button type="button" class="fb-toggle" id="fbToggle" onclick="toggleFbDone()">✓ 対応済みを見る</button>
+        <div id="fbDoneList" hidden></div>
+      </div>
+      <div class="fb-note">「対応済にする」を押すと ✓ が付いて「対応済み」にまとまります（スプレッドシートの STATUS 欄にも日付が入ります）</div>
     </div>
   </section>
 
@@ -855,71 +865,124 @@ memoEl.addEventListener("input", () => {
    ご意見箱（献立管理システムのGASから読む）
    ============================================================ */
 const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbwqIJ_b3CTXJsHoi42encJbSyP-ZGwRKzQZKqQmCbpWgd_Eh3LTtIkwWz1nmKIuHQXTpg/exec';
+/* ご意見箱の保存先が2か所に分かれているため、両方から読み込んで1つにまとめる
+   ・上：献立DBのGAS　・下：レシピ／お惣菜／ピザ生地アプリが送っているGAS */
+const FEEDBACK_URLS = [
+  FEEDBACK_URL,
+  'https://script.google.com/macros/s/AKfycbxfIp_fyisYQyXsy_oOL4q1gMRk9KExHjgtZQBv_HvSJbvMukINH8f7pmy8wUX0cChO/exec'
+];
 
 async function loadFeedback(){
   const sec = document.getElementById("fbSec");
-  if (!FEEDBACK_URL){ sec.hidden = true; return; }
-  try{
-    const res  = await fetch(FEEDBACK_URL + "?type=feedback&open=1&t=" + Date.now());
-    const data = await res.json();
-    const list = (data && data.ok && data.data && data.data.feedback) ? data.data.feedback : [];
-    renderFeedback(list);
-  }catch(err){ sec.hidden = true; }
+  const results = await Promise.all(FEEDBACK_URLS.map(async url => {
+    if (!url) return [];
+    try{
+      const res  = await fetch(url + "?type=feedback&t=" + Date.now());
+      const data = await res.json();
+      const list = (data && data.ok && data.data && data.data.feedback) ? data.data.feedback : [];
+      return list.map(fb => Object.assign({}, fb, { src: url }));
+    }catch(err){ return []; }
+  }));
+  const all = [].concat.apply([], results);
+  if (!all.length){ sec.hidden = true; return; }
+  renderFeedback(all);
 }
 
-function renderFeedback(list){
-  const sec  = document.getElementById("fbSec");
-  const box  = document.getElementById("fbList");
-  if (!list || !list.length){ sec.hidden = true; return; }
-  box.innerHTML = "";
-  list.forEach(fb => {
-    const item = document.createElement("div");
-    item.className = "fb-item";
-    const head = document.createElement("div");
-    head.className = "fb-head";
-    if (fb.app){
-      const app = document.createElement("span");
-      app.className = "fb-app"; app.textContent = fb.app; head.appendChild(app);
-    }
-    const kind = document.createElement("span");
-    const k = String(fb.kind || "その他");
-    kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
-    kind.textContent = k; head.appendChild(kind);
-    const name = document.createElement("span");
-    name.className = "fb-name"; name.textContent = fb.name ? fb.name : "（匿名）"; head.appendChild(name);
-    const at = document.createElement("span");
-    at.className = "fb-at"; at.textContent = fbShortDate(fb.at); head.appendChild(at);
-    const text = document.createElement("div");
-    text.className = "fb-text"; text.textContent = fb.text || "";
+/* 1件ぶんのカードを作る。済みのものは ✓ を付けてボタンを出さない */
+function fbItemEl(fb){
+  const isDone = !!String(fb.status || "").trim();
+  const item = document.createElement("div");
+  item.className = "fb-item" + (isDone ? " fb-handled" : "");
+
+  const head = document.createElement("div");
+  head.className = "fb-head";
+
+  if (isDone){
+    const chk = document.createElement("span");
+    chk.className = "fb-check";
+    chk.textContent = "✓";
+    head.appendChild(chk);
+  }
+  if (fb.app){
+    const app = document.createElement("span");
+    app.className = "fb-app"; app.textContent = fb.app; head.appendChild(app);
+  }
+  const kind = document.createElement("span");
+  const k = String(fb.kind || "その他");
+  kind.className = "fb-kind" + (k.indexOf("不具合")>=0 ? " k-bug" : (k.indexOf("こうして")>=0 ? " k-want" : ""));
+  kind.textContent = k; head.appendChild(kind);
+
+  const name = document.createElement("span");
+  name.className = "fb-name"; name.textContent = fb.name ? fb.name : "（匿名）"; head.appendChild(name);
+
+  const at = document.createElement("span");
+  at.className = "fb-at";
+  at.textContent = isDone ? (String(fb.status).trim() + "・" + fbShortDate(fb.at)) : fbShortDate(fb.at);
+  head.appendChild(at);
+
+  const text = document.createElement("div");
+  text.className = "fb-text"; text.textContent = fb.text || "";
+
+  item.append(head, text);
+
+  if (!isDone){
     const foot = document.createElement("div");
     foot.className = "fb-foot";
     const done = document.createElement("button");
     done.className = "fb-done"; done.textContent = "対応済にする";
-    done.addEventListener("click", () => markFeedbackDone(fb, item, done));
+    done.addEventListener("click", () => markFeedbackDone(fb, done));
     foot.appendChild(done);
-    item.append(head, text, foot);
-    box.appendChild(item);
-  });
-  document.getElementById("fbCount").textContent = list.length + "件";
+    item.appendChild(foot);
+  }
+  return item;
+}
+
+function renderFeedback(list){
+  const sec   = document.getElementById("fbSec");
+  const box   = document.getElementById("fbList");
+  const dWrap = document.getElementById("fbDoneWrap");
+  const dBox  = document.getElementById("fbDoneList");
+
+  const open = list.filter(fb => !String(fb.status || "").trim());
+  const done = list.filter(fb =>  String(fb.status || "").trim()).slice(0, 30);
+
+  box.innerHTML = "";
+  if (open.length) open.forEach(fb => box.appendChild(fbItemEl(fb)));
+  else box.innerHTML = '<div class="fb-none">未対応のご意見はありません</div>';
+
+  dBox.innerHTML = "";
+  done.forEach(fb => dBox.appendChild(fbItemEl(fb)));
+  dWrap.hidden = !done.length;
+  document.getElementById("fbToggle").textContent =
+    (dBox.hidden ? "✓ 対応済みを見る（" : "✓ 対応済みを隠す（") + done.length + "件）";
+
+  document.getElementById("fbCount").textContent =
+    open.length ? open.length + "件" : "済";
   sec.hidden = false;
 }
 
-function markFeedbackDone(fb, item, btn){
-  if (!FEEDBACK_URL || !fb.row) return;
-  btn.disabled = true; btn.textContent = "対応済"; item.classList.add("is-done");
+function toggleFbDone(){
+  const dBox = document.getElementById("fbDoneList");
+  dBox.hidden = !dBox.hidden;
+  const n = dBox.querySelectorAll(".fb-item").length;
+  document.getElementById("fbToggle").textContent =
+    (dBox.hidden ? "✓ 対応済みを見る（" : "✓ 対応済みを隠す（") + n + "件）";
+}
+
+/* 対応済にする。消さずに ✓ を付けて「対応済み」へ移す */
+function markFeedbackDone(fb, btn){
+  const url = fb.src || FEEDBACK_URL;
+  if (!url || !fb.row) return;
+  btn.disabled = true; btn.textContent = "対応済";
   const stamp = new Date();
   const label = "済 " + (stamp.getMonth()+1) + "/" + stamp.getDate();
   try{
-    fetch(FEEDBACK_URL, { method: "POST", mode: "no-cors",
+    fetch(url, { method: "POST", mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "feedback_status", data: { row: fb.row, status: label } }) });
   }catch(e){}
-  setTimeout(() => {
-    item.remove();
-    const left = document.querySelectorAll("#fbList .fb-item").length;
-    if (!left) document.getElementById("fbSec").hidden = true;
-    else document.getElementById("fbCount").textContent = left + "件";
-  }, 600);
+  fb.status = label;
+  setTimeout(() => { loadFeedback(); }, 900);
 }
 
 function fbShortDate(s){
