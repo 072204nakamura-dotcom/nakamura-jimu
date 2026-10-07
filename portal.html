@@ -23,6 +23,7 @@
   --green:#0B5A40;        /* 照の深緑 */
   --brown:#6B4A23;        /* 事務の焦茶 */
   --kincha:#A5852F;       /* お客様向けメニューの山吹茶 */
+  --fuji:#5B4B80;         /* その他の藤紫 */
   --mincho:'Shippori Mincho B1',serif;
   --gothic:'Zen Kaku Gothic New',sans-serif;
 }
@@ -73,6 +74,7 @@ section{margin-bottom:26px}
 .s-terrasse .sec-name{color:var(--green)}
 .s-jimu     .sec-name{color:var(--brown)}
 .s-menu     .sec-name{color:var(--kincha)}
+.s-other    .sec-name{color:var(--fuji)}
 
 /* ── アプリ札 ── */
 .card{
@@ -120,7 +122,8 @@ footer .fdot{color:var(--gold);padding:0 6px}
   section:nth-of-type(2){animation-delay:.12s}
   section:nth-of-type(3){animation-delay:.18s}
   section:nth-of-type(4){animation-delay:.24s}
-  footer{animation-delay:.3s}
+  section:nth-of-type(5){animation-delay:.3s}
+  footer{animation-delay:.36s}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 }
 </style>
@@ -262,6 +265,17 @@ footer .fdot{color:var(--gold);padding:0 6px}
     <span class="card-body">
       <span class="card-name">なかむら事務ツール</span>
       <span class="card-desc">経理・書類まわりの道具箱</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
+</section>
+
+<section class="s-other">
+  <div class="sec-head"><span class="sec-name">その他</span><span class="sec-rule"></span></div>
+  <a class="card" href="https://072204nakamura-dotcom.github.io/umareta-hi-no-sora/">
+    <span class="card-body">
+      <span class="card-name">生まれた日の空</span>
+      <span class="card-desc">生年月日から宿曜・星座・数秘・干支などを読む</span>
     </span>
     <span class="chev">›</span>
   </a>
